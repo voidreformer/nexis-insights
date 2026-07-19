@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: product-feedback-analyzer
+    env: node
+    plan: starter
+    buildCommand: npm install --production
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: OMNIROUTE_GATEWAY_URL
+        sync: false
+      - key: OMNIROUTE_API_KEY
+        sync: false

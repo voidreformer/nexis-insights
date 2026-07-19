@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Feedback Analyzer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="logo">
+        <span class="logo-icon">🔮</span>
+        <h2>Pulse.ai</h2>
+      </div>
+      <nav class="nav-menu">
+        <a href="#" class="active"><span class="icon">📈</span> Dashboard</a>
+        <a href="#"><span class="icon">📥</span> Imports</a>
+        <a href="#"><span class="icon">📑</span> Tag Manager</a>
+        <a href="#"><span class="icon">⚙️</span> Settings</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-profile">
+          <div class="avatar">F</div>
+          <div class="user-info">
+            <h4>Feedback Team</h4>
+            <p>Admin Mode</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <header class="header">
+        <div class="header-title">
+          <h1>Product Feedback Analyzer</h1>
+          <p>Extract sentiment, key pain points, and feature requests from raw customer reviews.</p>
+        </div>
+        <div class="header-actions">
+          <div class="status-badge live">AI Model Ready</div>
+        </div>
+      </header>
+
+      <div class="dashboard-grid">
+        <!-- Input section -->
+        <section class="card input-section">
+          <h3>Input Feedback Data</h3>
+          <p class="description-lbl">Paste raw user reviews, support tickets, App Store reviews, or type sample text below.</p>
+          <div class="form-group">
+            <textarea id="feedback-input" rows="8" placeholder="Example:
+- 'The checkout page keeps crashing on Safari. Super frustrating!'
+- 'I love the new dark mode, but I wish we could export reports in PDF format.'
+- 'Amazing app! Saved me 5 hours this week.'"></textarea>
+          </div>
+          <div class="actions-row">
+            <button id="clear-btn" class="btn secondary">Clear</button>
+            <button id="analyze-btn" class="btn primary">Analyze Comments</button>
+          </div>
+        </section>
+
+        <!-- Stats Overview (Always visible) -->
+        <div class="side-panel">
+          <section class="card stats-card">
+            <h3>Quick Stats</h3>
+            <div class="stats-grid">
+              <div class="stat-box">
+                <span class="stat-num" id="stat-parsed">142</span>
+                <span class="stat-lbl">Total Reviews Analyzed</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-num" id="stat-positive">76%</span>
+                <span class="stat-lbl">Avg. Positive Sentiment</span>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- Analysis Results Panel (Revealed upon click) -->
+      <div id="results-panel" class="results-panel hidden">
+        <div class="results-header">
+          <h2>Analysis Output</h2>
+          <button id="export-btn" class="btn secondary btn-sm"><span class="icon">💾</span> Export Summary</button>
+        </div>
+
+        <div class="analysis-grid">
+          <!-- Sentiment Breakdowns -->
+          <div class="card sentiment-card">
+            <h3>Sentiment Breakdown</h3>
+            <div class="chart-container">
+              <div class="progress-bar-wrapper">
+                <div class="bar-label"><span>Positive</span><span class="val-txt" id="pos-pct">0%</span></div>
+                <div class="bar-outer"><div class="bar-inner pos" id="pos-bar" style="width: 0%"></div></div>
+              </div>
+              <div class="progress-bar-wrapper">
+                <div class="bar-label"><span>Neutral</span><span class="val-txt" id="neu-pct">0%</span></div>
+                <div class="bar-outer"><div class="bar-inner neu" id="neu-bar" style="width: 0%"></div></div>
+              </div>
+              <div class="progress-bar-wrapper">
+                <div class="bar-label"><span>Negative</span><span class="val-txt" id="neg-pct">0%</span></div>
+                <div class="bar-outer"><div class="bar-inner neg" id="neg-bar" style="width: 0%"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Feature Requests / Action Items -->
+          <div class="card insights-card">
+            <h3>Top Actionable Insights</h3>
+            <div class="insights-lists">
+              <div class="insight-group">
+                <h4 class="pain-points-title">🚨 Key Pain Points</h4>
+                <ul class="insight-ul" id="pain-points-list">
+                  <!-- JS injected -->
+                </ul>
+              </div>
+              <div class="insight-group">
+                <h4 class="features-title">💡 Feature Requests</h4>
+                <ul class="insight-ul" id="features-list">
+                  <!-- JS injected -->
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Structured AI Summary -->
+        <div class="card summary-card">
+          <h3>AI Executive Summary</h3>
+          <div class="ai-writeup" id="ai-writeup">
+            <!-- JS Injected -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

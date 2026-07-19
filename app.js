@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </li>`;
         });
         
-        const ctx = document.getElementById('priceTrendChart').getContext('2d');
+        try { const ctx = document.getElementById('priceTrendChart').getContext('2d');
         if(window.priceChart) window.priceChart.destroy();
         window.priceChart = new Chart(ctx, {
           type: 'line',
@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           }
         });
-      } else if (priceIntelCard) {
+      } catch(e) { console.error('Chart error', e); } } else if (priceIntelCard) {
         priceIntelCard.classList.add('hidden');
       }
 

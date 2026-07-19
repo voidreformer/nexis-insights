@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Try hitting our local backend first (we will build this next)
       let data;
       try {
-        const response = await fetch('http://localhost:3000/api/analyze', {
+        const response = await fetch('/api/analyze', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text })

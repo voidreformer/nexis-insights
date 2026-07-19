@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const { OpenAI } = require('openai'); // Used for standard LLMs and OmniRoute NIM fallback
+const axios = require('axios');
+const cheerio = require('cheerio');
 
 dotenv.config();
 
@@ -33,8 +35,33 @@ Ensure the percentages sum to 100. DO NOT include markdown formatting (\`\`\`jso
 `;
 
 app.post('/api/analyze', async (req, res) => {
-  const { text } = req.body;
-  if (!text) return res.status(400).json({ error: 'Text is required' });
+  let { text } = req.body;
+  if (!text) return res.status(400).json({ error: 'Text or URL is required' });
+
+  // Web Scraping Logic if a URL is provided
+  let analysisContent = text;
+  if (text.trim().startsWith('http://') || text.trim().startsWith('https://')) {
+    console.log(`[Scraper] URL detected. Fetching data from: ${text}`);
+    try {
+      const response = await axios.get(text.trim(), {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+      });
+      const $ = cheerio.load(response.data);
+      // Remove unnecessary elements
+      $('script, style, noscript, nav, footer, header').remove();
+      // Extract visible text
+      const scrapedText = $('body').text().replace(/\s+/g, ' ').trim();
+
+      // Limit to ~15000 chars to avoid token limits on fallback models
+      analysisContent = "Scraped Website Content:\n" + scrapedText.substring(0, 15000);
+      console.log(`[Scraper] Successfully extracted ${analysisContent.length} characters.`);
+    } catch (scrapeErr) {
+      console.error('[Scraper] Failed to scrape URL:', scrapeErr.message);
+      return res.status(400).json({ error: 'Failed to scrape the provided URL. Please paste raw text instead.' });
+    }
+  }
 
   try {
     // 1. Primary Attempt (e.g., standard internal LLM or Google GenAI)
@@ -51,7 +78,7 @@ app.post('/api/analyze', async (req, res) => {
         model: 'nvidia/llama-3.1-405b-instruct',
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: text }
+          { role: 'user', content: analysisContent }
         ],
         temperature: 0.2,
         max_tokens: 1024
@@ -76,7 +103,7 @@ app.post('/api/analyze', async (req, res) => {
         negative_pct: 35,
         pain_points: ["Simulated: API Keys missing for NIM fallback", "Simulated: Checkout issues"],
         feature_requests: ["Simulated: PDF export"],
-        executive_summary: "[MOCK DATA] OmniRoute backend initiated successfully, but API keys are pending. User sentiment is mixed."
+        executive_summary: "[MOCK DATA] OmniRoute backend initiated successfully, but API keys are pending. Scraper logic triggered if URL was passed."
       });
     }
   }

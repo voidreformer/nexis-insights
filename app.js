@@ -80,16 +80,80 @@ document.addEventListener('DOMContentLoaded', () => {
       valNeg.textContent = `${data.negative_pct}%`;
 
       listPain.innerHTML = '';
-      data.pain_points.forEach(pt => {
+      if(data.pain_points) data.pain_points.forEach(pt => {
         listPain.innerHTML += `<li>${pt}</li>`;
       });
 
       listFeatures.innerHTML = '';
-      data.feature_requests.forEach(ft => {
+      if(data.feature_requests) data.feature_requests.forEach(ft => {
         listFeatures.innerHTML += `<li>${ft}</li>`;
       });
 
-      textSummary.innerHTML = data.executive_summary;
+      if(textSummary) textSummary.innerHTML = data.executive_summary;
+      
+      const aiWriteup = document.getElementById('ai-writeup');
+      if (aiWriteup) aiWriteup.innerHTML = data.executive_summary;
+
+      // Price Intelligence Logic
+      const priceIntelCard = document.getElementById('price-intel-card');
+      if (data.price_intelligence && priceIntelCard) {
+        priceIntelCard.classList.remove('hidden');
+        document.getElementById('buy-recommendation').textContent = data.price_intelligence.buy_recommendation;
+        
+        // Color code recommendation
+        const recTag = document.getElementById('buy-recommendation');
+        if (data.price_intelligence.buy_recommendation.includes('BUY')) {
+          recTag.style.background = '#10b981'; // green
+          recTag.style.color = '#fff';
+        } else if (data.price_intelligence.buy_recommendation.includes('WAIT')) {
+          recTag.style.background = '#f59e0b'; // yellow
+          recTag.style.color = '#fff';
+        } else {
+          recTag.style.background = '#ef4444'; // red
+          recTag.style.color = '#fff';
+        }
+        
+        document.getElementById('detected-price').textContent = data.price_intelligence.detected_price;
+        document.getElementById('price-reasoning').textContent = data.price_intelligence.reasoning;
+        
+        const compList = document.getElementById('competitor-list');
+        compList.innerHTML = '';
+        data.price_intelligence.competitor_prices.forEach(comp => {
+          compList.innerHTML += `<li style="background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 6px; display: flex; justify-content: space-between;">
+            <span style="color: #cbd5e1;">${comp.store}</span>
+            <span style="font-weight: 600; color: #fff;">${comp.price}</span>
+          </li>`;
+        });
+        
+        // Render Chart
+        const ctx = document.getElementById('priceTrendChart').getContext('2d');
+        if(window.priceChart) window.priceChart.destroy();
+        window.priceChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: ['Month 1', 'Month 2', 'Month 3', 'Month 4', 'Month 5', 'Current'],
+            datasets: [{
+              label: 'Price Trend',
+              data: data.price_intelligence.price_trend_last_6_months,
+              borderColor: '#3b82f6',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.4
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { 
+              y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+              x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+            }
+          }
+        });
+      } else if (priceIntelCard) {
+        priceIntelCard.classList.add('hidden');
+      }
 
       statusIndicator.innerHTML = `<span class="pulse-dot" style="background: var(--status-positive); box-shadow: 0 0 10px var(--status-positive);"></span> AI Analysis Complete`;
 

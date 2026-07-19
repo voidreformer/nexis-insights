@@ -1,74 +1,67 @@
-# Nexis Insight
+# Nexis Insights
 
-This is a premium, ready-to-code frontend template for **Nexis Insight**. The interface is pre-built with CSS styling and interactive JS simulations, so you can focus on writing the AI agent logic and database storage.
+Nexis Insights is an AI-powered Product Feedback Analyzer. It ingests raw user feedback and automatically extracts actionable insights—including sentiment distribution, key pain points, feature requests, and an executive summary.
 
-## Recommended Architecture
+The backend uses a resilient AI architecture: it attempts standard analysis first, then gracefully falls back to an OmniRoute Gateway (NVIDIA NIM via `llama-3.1-405b-instruct`) ensuring maximum uptime.
 
-```mermaid
-graph TD
-    Client[Web App / Frontend] -->|1. Paste Feedback / Upload CSV| API[Backend: Express / FastAPI]
-    API -->|2. Structured Prompt + System Instr| LLM[LLM API: Gemini / Claude]
-    LLM -->|3. Return JSON Schema Output| API
-    API -->|4. Store Batch Analysis| DB[(Database: SQLite / Supabase)]
-    API -->|5. Return Analytical Payload| Client
-```
+## 🚀 Features
 
----
+- **Automated Sentiment Analysis**: Understand the exact percentage of positive, neutral, and negative feedback.
+- **Actionable Takeaways**: Instantly view the top pain points and most requested features.
+- **Executive Summaries**: Get a high-level strategic overview of the feedback batch.
+- **OmniRoute Fallback System**: Built-in redundancy if the primary LLM reaches limits or fails.
+- **Modern UI**: A premium, glassmorphic design that visualizes the data beautifully.
 
-## 🛠️ Step-by-Step Implementation Guide
+## 🛠️ Tech Stack
 
-Follow these steps using Antigravity / Claude Code to build out the backend:
+- **Frontend**: HTML5, CSS3, Vanilla JavaScript
+- **Backend**: Node.js, Express.js
+- **AI Integration**: OpenAI SDK (compatible with NVIDIA NIM API for OmniRoute)
+- **Deployment Ready**: Includes Dockerfile and render.yaml
 
-### 1. Initialize Server & Dependencies
-Initialize a Node.js or Python backend. For example, using Python & FastAPI:
+## 📦 Local Setup
+
+1. **Clone the repository**:
+   ```bash
+   git clone <your-repo-url>
+   cd nexis-insights
+   ```
+
+2. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Environment Variables**:
+   Create a `.env` file in the root directory and add your API keys:
+   ```env
+   PORT=3000
+   OMNIROUTE_API_KEY=your_nim_api_key_here
+   OMNIROUTE_GATEWAY_URL=https://integrate.api.nvidia.com/v1
+   ```
+
+4. **Run the Application**:
+   ```bash
+   npm start
+   ```
+
+5. **View in Browser**:
+   Open [http://localhost:3000](http://localhost:3000)
+
+## 🚢 Deployment (GitHub & Render)
+
+This repository is ready to be deployed to platforms like [Render](https://render.com) or Heroku.
+
+**To deploy to Render:**
+1. Push this repository to your GitHub account.
+2. Connect the repository to your Render account.
+3. The included `render.yaml` Blueprint will automatically configure the Web Service.
+4. Make sure to add `OMNIROUTE_API_KEY` to your environment variables in the Render dashboard.
+
+## 🐋 Docker Support
+
+A `Dockerfile` and `docker-compose.yml` are included for containerized deployments.
+
 ```bash
-pip install fastapi uvicorn pydantic google-genai
-```
-
-### 2. Configure JSON Output Schema
-Define the structured schema using Pydantic (Python) or Zod (JavaScript) so the LLM returns exact structured JSON instead of plain text:
-```python
-from pydantic import BaseModel
-from typing import List
-
-class FeedbackAnalysis(BaseModel):
-    positive_pct: int
-    neutral_pct: int
-    negative_pct: int
-    pain_points: List[str]
-    feature_requests: List[str]
-    executive_summary: str
-```
-
-### 3. Connect the LLM API
-Create a `/analyze` endpoint that runs the model:
-```python
-from google import genai
-from google.genai import types
-
-client = genai.Client()
-
-@app.post("/analyze")
-async def analyze_feedback(text: str):
-    response = client.models.generate_content(
-        model='gemini-2.5-flash',
-        contents=f"Analyze the following feedback and return structured metrics:\n{text}",
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-            response_schema=FeedbackAnalysis,
-            system_instruction="You are an expert product manager. Extract actionable bug reports and feature requests."
-        ),
-    )
-    return response.text
-```
-
-### 4. Database Storage
-Store the historical summaries in a database (e.g. SQLite / PostgreSQL) so teams can track sentiment trends over time.
-
----
-
-## 🚀 How to Run locally
-Simply open `index.html` in your browser, or spin up a local development server:
-```bash
-npx live-server .
+docker-compose up --build
 ```

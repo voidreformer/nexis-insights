@@ -106,11 +106,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const recTag = document.getElementById('buy-recommendation');
         if (data.price_intelligence.buy_recommendation.includes('BUY')) {
-          recTag.style.background = '#10b981';
+          recTag.style.background = 'var(--sds-color-background-positive-default, #10b981)';
         } else if (data.price_intelligence.buy_recommendation.includes('WAIT')) {
-          recTag.style.background = '#f59e0b';
+          recTag.style.background = 'var(--sds-color-background-warning-default, #f59e0b)';
         } else {
-          recTag.style.background = '#ef4444';
+          recTag.style.background = 'var(--sds-color-background-negative-default, #ef4444)';
         }
         
         document.getElementById('detected-price').textContent = data.price_intelligence.detected_price;
@@ -119,9 +119,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const compList = document.getElementById('competitor-list');
         compList.innerHTML = '';
         data.price_intelligence.competitor_prices.forEach(comp => {
-          compList.innerHTML += `<li style="background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 6px; display: flex; justify-content: space-between;">
-            <span style="color: #cbd5e1;">${comp.store}</span>
-            <span style="font-weight: 600; color: #fff;">${comp.price}</span>
+          compList.innerHTML += `<li class="card card-variant-stroke" style="padding: 8px 12px; display: flex; justify-content: space-between; border-radius: var(--sds-size-radius-200);">
+            <span style="color: var(--sds-color-text-default-secondary);">${comp.store}</span>
+            <span style="font-weight: 600; color: var(--sds-color-text-default-default);">${comp.price}</span>
           </li>`;
         });
         

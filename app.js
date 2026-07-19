@@ -20,10 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Pre-fill is already in HTML placeholder, but let's set value if empty so user doesn't have to type
   if (!inputEl.value) {
-    inputEl.value = "- Checkout is extremely slow on Safari. Super frustrating!
+    inputEl.value = `- Checkout is extremely slow on Safari. Super frustrating!
 - I love the new dark mode, but please let us export PDF reports.
 - The UI is beautiful, but the settings menu is confusing.
-- Amazing support! Resolved my issue in 5 minutes.";
+- Amazing support! Resolved my issue in 5 minutes.`;
   }
 
   analyzeBtn.addEventListener('click', async () => {

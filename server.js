@@ -84,6 +84,6 @@ app.post('/api/analyze', async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 Feedback Analyzer API running on port ${PORT}`);
+  console.log(`🚀 Nexis Insight API running on port ${PORT}`);
   console.log(`🛡️ OmniRoute NIM Fallback configured (nvidia/llama-3.1-405b-instruct)`);
 });

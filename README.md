@@ -1,6 +1,6 @@
-# Blueprints: Product Feedback Analyzer
+# Nexis Insight
 
-This is a premium, ready-to-code frontend template for a **Product Feedback Analyzer**. The interface is pre-built with CSS styling and interactive JS simulations, so you can focus on writing the AI agent logic and database storage.
+This is a premium, ready-to-code frontend template for **Nexis Insight**. The interface is pre-built with CSS styling and interactive JS simulations, so you can focus on writing the AI agent logic and database storage.
 
 ## Recommended Architecture
 

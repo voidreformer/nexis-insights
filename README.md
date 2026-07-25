@@ -7,6 +7,8 @@
 ![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
 
 > **Nexis Insights** is a production-grade, real-world AI engine that extracts sentiment, key pain points, feature requests, and category-matched price intelligence from customer reviews or live e-commerce product URLs.
+>
+> 💎 **Enterprise & Premium Roadmap Note:** As user adoption and market demand increase, advanced Enterprise subscription tiers, custom multi-tenant packages, and dedicated SLA API keys will be released.
 
 ---
 

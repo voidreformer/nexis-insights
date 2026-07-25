@@ -4,7 +4,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Product Feedback Analyzer</title>
+  <title>Nexis Insights — Product Feedback Analyzer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -17,135 +17,144 @@
 <body>
   <div class="app-container">
     <!-- Sidebar Navigation -->
-    <aside class="sidebar">
-      <div class="logo">
-        <span class="logo-icon">🔮</span>
-        <h2>Nexis Insights</h2>
+    <aside class="glass-sidebar">
+      <div class="brand">
+        <div class="brand-icon">
+          <span class="logo-icon" style="font-size: 24px;">🔮</span>
+        </div>
+        <span class="brand-text"><span class="text-accent">Nexis</span> Insights</span>
       </div>
-      <nav class="nav-menu">
-        <a href="#" class="active"><span class="icon">📈</span> Dashboard</a>
-        <a href="#"><span class="icon">📥</span> Imports</a>
-        <a href="#"><span class="icon">📑</span> Tag Manager</a>
-        <a href="#"><span class="icon">⚙️</span> Settings</a>
+      <nav class="nav-links">
+        <button class="nav-item active" id="nav-dashboard"><span class="icon">📈</span> Dashboard</button>
+        <button class="nav-item" id="nav-history"><span class="icon">📑</span> Analysis History</button>
+        <button class="nav-item" id="nav-settings"><span class="icon">⚙️</span> Settings</button>
       </nav>
       <div class="sidebar-footer">
-        <div class="user-profile">
-          <div class="avatar">F</div>
+        <div class="user-profile" id="user-profile-btn">
+          <div class="avatar" id="user-avatar">?</div>
           <div class="user-info">
-            <h4>Feedback Team</h4>
-            <p>Admin Mode</p>
+            <span class="user-name" id="user-name-display">Guest Mode</span>
+            <span class="user-role" id="user-role-display">Click to Login</span>
           </div>
         </div>
       </div>
     </aside>
 
-    <!-- Main Content Area -->
-    <main class="main-content">
-      <header class="header">
-        <div class="header-title">
-          <h1>Product Feedback Analyzer</h1>
-          <p>Extract sentiment, key pain points, and feature requests from raw customer reviews.</p>
-        </div>
-        <div class="header-actions">
-          <div class="status-badge live">AI Model Ready</div>
-        </div>
-      </header>
+    <!-- Main Workspace -->
+    <main class="workspace">
+      <!-- DASHBOARD VIEW -->
+      <div id="view-dashboard-container">
+        <header class="workspace-header">
+          <div class="header-title">
+            <h1 class="page-title">Product Feedback Analyzer</h1>
+            <p class="page-subtitle">Extract sentiment, key pain points, and feature requests from raw customer reviews.</p>
+          </div>
+          <div class="header-actions">
+            <div class="status-indicator">
+              <span class="pulse-dot"></span>
+              <span class="status-badge" id="ai-status-badge">AI Engine Connected</span>
+            </div>
+          </div>
+        </header>
 
-      <div class="dashboard-grid">
-        <!-- Input section -->
-        <section class="card input-section">
-          <h3>Input Feedback Data</h3>
-          <p class="description-lbl">Paste raw user reviews, support tickets, App Store reviews, or type sample text below.</p>
-          <div class="form-group">
-            <textarea id="feedback-input" rows="8" placeholder="Example:
+        <div class="dashboard-grid">
+          <!-- Input section -->
+          <section class="glass-panel input-section">
+            <div class="panel-header">
+              <h3>Input Feedback Data</h3>
+              <span class="badge">NVIDIA Nemotron / OpenRouter</span>
+            </div>
+            <div class="input-wrapper">
+              <textarea id="feedback-input" rows="8" placeholder="Example:
 - 'The checkout page keeps crashing on Safari. Super frustrating!'
 - 'I love the new dark mode, but I wish we could export reports in PDF format.'
 - 'Amazing app! Saved me 5 hours this week.'"></textarea>
-          </div>
-          <div class="actions-row">
-            <button id="clear-btn" class="btn secondary">Clear</button>
-            <button id="analyze-btn" class="btn primary">Analyze Comments</button>
-          </div>
-        </section>
+            </div>
+            <div class="input-actions">
+              <button id="clear-btn" class="btn-glow">Clear</button>
+              <button id="analyze-btn" class="btn-primary">Analyze Comments</button>
+            </div>
+          </section>
 
-        <!-- Stats Overview (Always visible) -->
-        <div class="side-panel">
-          <section class="card stats-card">
-            <h3>Quick Stats</h3>
-            <div class="stats-grid">
-              <div class="stat-box">
-                <span class="stat-num" id="stat-parsed">142</span>
-                <span class="stat-lbl">Total Reviews Analyzed</span>
+          <!-- Stats Overview (Always visible) -->
+          <section class="glass-panel stats-panel">
+            <div class="panel-header">
+              <h3>Quick Stats</h3>
+              <span class="badge">SQLite Persistence</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div class="metric-card" style="border-top: 2px solid var(--accent-primary);">
+                <span class="metric-label">Analyzed Comments</span>
+                <span class="metric-value" id="stat-parsed">0</span>
               </div>
-              <div class="stat-box">
-                <span class="stat-num" id="stat-positive">76%</span>
-                <span class="stat-lbl">Avg. Positive Sentiment</span>
+              <div class="metric-card" style="border-top: 2px solid var(--accent-secondary);">
+                <span class="metric-label">Positive Sentiment</span>
+                <span class="metric-value" id="stat-positive">0%</span>
               </div>
             </div>
           </section>
         </div>
-      </div>
 
-      <!-- Analysis Results Panel (Revealed upon click) -->
-      <div id="results-panel" class="results-panel hidden">
-        <div class="results-header">
-          <h2>Analysis Output</h2>
-          <button id="export-btn" class="btn secondary btn-sm"><span class="icon">💾</span> Export Summary</button>
-        </div>
+        <!-- Analysis Results Panel (Revealed upon click) -->
+        <div id="results-panel" class="results-content hidden">
+          <div class="glass-panel" style="gap: 24px;">
+            <div class="panel-header">
+              <h3>Analysis Output</h3>
+              <button id="export-btn" class="btn-glow"><span class="icon">💾</span> Export Summary</button>
+            </div>
 
-        <div class="analysis-grid">
-          <!-- Sentiment Breakdowns -->
-          <div class="card sentiment-card">
-            <h3>Sentiment Breakdown</h3>
-            <div class="chart-container">
-              <div class="progress-bar-wrapper">
-                <div class="bar-label"><span>Positive</span><span class="val-txt" id="pos-pct">0%</span></div>
-                <div class="bar-outer"><div class="bar-inner pos" id="pos-bar" style="width: 0%"></div></div>
+            <!-- Sentiment Row -->
+            <div class="sentiment-row">
+              <div class="metric-card positive">
+                <span class="metric-label">Positive</span>
+                <span class="metric-value" id="pos-pct">0%</span>
+                <div class="bar-outer" style="width: 100%; height: 4px; background: rgba(255,255,255,0.05); margin-top: 8px; border-radius: 2px; overflow: hidden;">
+                  <div class="bar-inner pos" id="pos-bar" style="width: 0%; height: 100%; background: var(--status-positive); transition: width 1s;"></div>
+                </div>
               </div>
-              <div class="progress-bar-wrapper">
-                <div class="bar-label"><span>Neutral</span><span class="val-txt" id="neu-pct">0%</span></div>
-                <div class="bar-outer"><div class="bar-inner neu" id="neu-bar" style="width: 0%"></div></div>
+              <div class="metric-card neutral">
+                <span class="metric-label">Neutral</span>
+                <span class="metric-value" id="neu-pct">0%</span>
+                <div class="bar-outer" style="width: 100%; height: 4px; background: rgba(255,255,255,0.05); margin-top: 8px; border-radius: 2px; overflow: hidden;">
+                  <div class="bar-inner neu" id="neu-bar" style="width: 0%; height: 100%; background: var(--status-neutral); transition: width 1s;"></div>
+                </div>
               </div>
-              <div class="progress-bar-wrapper">
-                <div class="bar-label"><span>Negative</span><span class="val-txt" id="neg-pct">0%</span></div>
-                <div class="bar-outer"><div class="bar-inner neg" id="neg-bar" style="width: 0%"></div></div>
+              <div class="metric-card negative">
+                <span class="metric-label">Negative</span>
+                <span class="metric-value" id="neg-pct">0%</span>
+                <div class="bar-outer" style="width: 100%; height: 4px; background: rgba(255,255,255,0.05); margin-top: 8px; border-radius: 2px; overflow: hidden;">
+                  <div class="bar-inner neg" id="neg-bar" style="width: 0%; height: 100%; background: var(--status-negative); transition: width 1s;"></div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Feature Requests / Action Items -->
-          <div class="card insights-card">
-            <h3>Top Actionable Insights</h3>
-            <div class="insights-lists">
-              <div class="insight-group">
-                <h4 class="pain-points-title">🚨 Key Pain Points</h4>
-                <ul class="insight-ul" id="pain-points-list">
+            <!-- Breakdowns -->
+            <div class="breakdown-grid">
+              <div class="breakdown-card">
+                <h4>🚨 Key Pain Points</h4>
+                <ul class="glass-list" id="pain-points-list">
                   <!-- JS injected -->
                 </ul>
               </div>
-              <div class="insight-group">
-                <h4 class="features-title">💡 Feature Requests</h4>
-                <ul class="insight-ul" id="features-list">
+              <div class="breakdown-card">
+                <h4>💡 Feature Requests</h4>
+                <ul class="glass-list" id="features-list">
                   <!-- JS injected -->
                 </ul>
               </div>
             </div>
+
+            <!-- Executive Summary -->
+            <div class="summary-card">
+              <h4>AI Executive Summary</h4>
+              <p class="glass-text" id="ai-writeup">
+                <!-- JS Injected -->
+              </p>
+            </div>
           </div>
         </div>
 
-        
-        <!-- Structured AI Summary -->
-        <div class="card summary-card">
-          <h3>AI Executive Summary</h3>
-          <div class="ai-writeup" id="ai-writeup">
-            <!-- JS Injected -->
-          </div>
-        </div>
-
-        
-        
-
-        <!-- 💰 Price Intelligence (Figma SDS / BuyHatke Mode) -->
+        <!-- 💰 Price Intelligence -->
         <div class="card card-direction-vertical card-variant-stroke price-intel-card hidden" id="price-intel-card" style="margin-top: 2rem; padding: 1.5rem; background: var(--sds-color-background-default-default);">
           <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--sds-color-border-default-default); padding-bottom: 1rem; margin-bottom: 1.5rem;">
             <h3 style="color: var(--sds-color-text-default-default); margin: 0; font: var(--sds-font-heading);">💰 Price Intelligence</h3>
@@ -170,11 +179,124 @@
             </div>
           </div>
         </div>
+      </div>
 
+      <!-- HISTORY VIEW (Hidden by default) -->
+      <div id="view-history-container" class="hidden">
+        <header class="workspace-header">
+          <div class="header-title">
+            <h1 class="page-title">Analysis History</h1>
+            <p class="page-subtitle">View past product reports saved to your persistent SQLite database.</p>
+          </div>
+          <div class="header-actions">
+            <button id="refresh-history-btn" class="btn-glow">🔄 Refresh</button>
+            <button id="export-history-csv-btn" class="btn-primary">📥 Export CSV</button>
+          </div>
+        </header>
+        <div class="glass-panel">
+          <div id="history-items-container" style="display: flex; flex-direction: column; gap: 16px;">
+            <!-- JS Injected History Timeline Cards -->
+          </div>
+        </div>
+      </div>
 
+      <!-- SETTINGS VIEW (Hidden by default) -->
+      <div id="view-settings-container" class="hidden">
+        <header class="workspace-header">
+          <div class="header-title">
+            <h1 class="page-title">System & AI Settings</h1>
+            <p class="page-subtitle">Configure AI model engine, web scraper options, and database preferences.</p>
+          </div>
+        </header>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+          <!-- AI Engine Settings -->
+          <div class="glass-panel">
+            <div class="panel-header">
+              <h3>🤖 AI Engine Configuration</h3>
+              <span class="badge" style="background: var(--status-positive); color: #fff;">Connected</span>
+            </div>
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label style="color: var(--text-muted); font-size: 13px; display: block; margin-bottom: 6px;">Primary AI Model</label>
+              <select id="setting-ai-model" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1);">
+                <option value="nvidia/nemotron-3-ultra-550b-a55b" selected>NVIDIA Nemotron 3 Ultra 550B (Default)</option>
+                <option value="meta/llama-3.1-405b-instruct">Meta Llama 3.1 405B Instruct</option>
+                <option value="mistralai/mixtral-8x22b-instruct">Mixtral 8x22B Instruct</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label style="color: var(--text-muted); font-size: 13px; display: block; margin-bottom: 6px;">AI Temperature</label>
+              <input type="range" id="setting-temperature" min="0" max="1" step="0.1" value="0.1" style="width: 100%;" />
+              <span id="temp-val-display" style="font-size: 12px; color: var(--text-muted);">0.1 (Maximum Precision)</span>
+            </div>
+          </div>
+
+          <!-- Web Scraper & Price Engine Settings -->
+          <div class="glass-panel">
+            <div class="panel-header">
+              <h3>🌐 Web Scraper & Price Engine</h3>
+              <span class="badge">Active</span>
+            </div>
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label style="color: var(--text-muted); font-size: 13px; display: block; margin-bottom: 6px;">HTTP Scraper Timeout (Seconds)</label>
+              <input type="number" id="setting-scrape-timeout" value="12" min="5" max="30" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1);" />
+            </div>
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label style="color: var(--text-muted); font-size: 13px; display: block; margin-bottom: 6px;">Structured Schema Extraction</label>
+              <select style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1);">
+                <option selected>JSON-LD Schema + OpenGraph Meta Tags (Enabled)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Database & Storage Info -->
+          <div class="glass-panel" style="grid-column: span 2;">
+            <div class="panel-header">
+              <h3>🗄️ SQLite WASM Database Status</h3>
+              <span class="badge">nexis_insights.db</span>
+            </div>
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 16px;">
+              Your records, price histories, and user sessions are securely persisted in local WASM SQLite database.
+            </p>
+            <div style="display: flex; gap: 12px;">
+              <button id="btn-save-settings" class="btn-primary">💾 Save Preferences</button>
+              <button id="btn-clear-history-db" class="btn-glow" style="border-color: rgba(239,68,68,0.4); color: #ef4444;">🗑️ Clear Local History</button>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   </div>
-  <script src="app.js?v=1784478529"></script>
+
+  <!-- Open Design Glassmorphic Auth Modal -->
+  <div id="auth-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-title">Login to Nexis Insights</h3>
+        <button id="close-modal-btn" class="modal-close">&times;</button>
+      </div>
+      <form id="auth-form" class="modal-body">
+        <div class="form-group" id="name-group">
+          <label>Full Name</label>
+          <input type="text" id="auth-name" placeholder="John Doe" />
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="auth-email" placeholder="user@example.com" required />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="auth-password" placeholder="••••••••" required />
+        </div>
+        <div id="auth-error-msg" class="auth-error hidden"></div>
+        <button type="submit" id="auth-submit-btn" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 12px;">Sign In</button>
+      </form>
+      <div class="modal-footer">
+        <span id="auth-toggle-text">Don't have an account? <a href="#" id="auth-toggle-btn">Register here</a></span>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=1784478530"></script>
 </body>
 </html>

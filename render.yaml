@@ -1,16 +1,13 @@
 services:
   - type: web
-    name: product-feedback-analyzer
+    name: nexis-insights
     env: node
-    plan: starter
-    buildCommand: npm install --production
+    buildCommand: npm install
     startCommand: node server.js
     envVars:
-      - key: NODE_ENV
-        value: production
       - key: PORT
         value: 3000
+      - key: MODEL_NAME
+        value: nvidia/nemotron-3-ultra-550b-a55b
       - key: OMNIROUTE_GATEWAY_URL
-        sync: false
-      - key: OMNIROUTE_API_KEY
-        sync: false
+        value: https://integrate.api.nvidia.com/v1

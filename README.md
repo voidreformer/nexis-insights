@@ -1,67 +1,83 @@
-# Nexis Insights
+# 🔮 Nexis Insights — Universal Product Feedback & Price Intelligence Engine
 
-Nexis Insights is an AI-powered Product Feedback Analyzer. It ingests raw user feedback and automatically extracts actionable insights—including sentiment distribution, key pain points, feature requests, and an executive summary.
+![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge)
+![AI Engine](https://img.shields.io/badge/AI%20Engine-NVIDIA%20Nemotron%203%20Ultra%20550B-76B900?style=for-the-badge&logo=nvidia)
+![Database](https://img.shields.io/badge/Database-SQLite%20WASM%20(sql.js)-003B57?style=for-the-badge&logo=sqlite)
+![Design System](https://img.shields.io/badge/UI-Open%20Design%20Glassmorphism-purple?style=for-the-badge)
+![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
 
-The backend uses a resilient AI architecture: it attempts standard analysis first, then gracefully falls back to an OmniRoute Gateway (NVIDIA NIM via `llama-3.1-405b-instruct`) ensuring maximum uptime.
+> **Nexis Insights** is a production-grade, real-world AI engine that extracts sentiment, key pain points, feature requests, and category-matched price intelligence from customer reviews or live e-commerce product URLs.
 
-## 🚀 Features
+---
 
-- **Automated Sentiment Analysis**: Understand the exact percentage of positive, neutral, and negative feedback.
-- **Actionable Takeaways**: Instantly view the top pain points and most requested features.
-- **Executive Summaries**: Get a high-level strategic overview of the feedback batch.
-- **OmniRoute Fallback System**: Built-in redundancy if the primary LLM reaches limits or fails.
-- **Modern UI**: A premium, glassmorphic design that visualizes the data beautifully.
+## 🌟 Key Features
 
-## 🛠️ Tech Stack
+- **🌐 Live Real-Time Web Scraper:** Automatically detects e-commerce URLs, extracts JSON-LD Schema.org product metadata (`price`, `currency`, `title`), and feeds clean page context to the AI.
+- **🤖 Universal Multi-Category Price Engine:** Automatically detects product category and matches real-world competitor stores without cross-category errors.
+- **🛡️ WASM SQLite Persistence & JWT Auth:** Zero-config embedded SQLite database (`nexis_insights.db`) with user registration, login, and report history storage.
+- **📊 Interactive Price Trend Analytics:** 6-month historical price trend charts rendered using Chart.js.
+- **📑 Analysis History & CSV Export:** Save, manage, filter, and export feedback reports into Excel/CSV format with a single click.
 
-- **Frontend**: HTML5, CSS3, Vanilla JavaScript
-- **Backend**: Node.js, Express.js
-- **AI Integration**: OpenAI SDK (compatible with NVIDIA NIM API for OmniRoute)
-- **Deployment Ready**: Includes Dockerfile and render.yaml
+---
 
-## 📦 Local Setup
+## 🏬 Universal Multi-Category Retailer Support
 
-1. **Clone the repository**:
-   ```bash
-   git clone <your-repo-url>
-   cd nexis-insights
-   ```
+| Product Category | Supported Retailers & Competitor Outlets |
+|------------------|-------------------------------------------|
+| **PC Hardware (CPUs, GPUs, RAM)** | Amazon, MDComputers, Vedant Computers, PrimeABGB, Flipkart |
+| **Fashion & Apparel** | Myntra, Ajio, Tata CLiQ, Amazon Fashion, Flipkart |
+| **Smartphones & Mobile** | Amazon, Flipkart, Croma, Reliance Digital, Vijay Sales |
+| **Beauty & Cosmetics** | Nykaa, Purplle, Tira, Amazon Beauty |
+| **Home Appliances & Audio** | Croma, Reliance Digital, Amazon, Flipkart, Vijay Sales |
+| **SaaS & Digital Products** | Official Site, AppSumo, G2 Deals, ProductHunt |
 
-2. **Install Dependencies**:
-   ```bash
-   npm install
-   ```
+---
 
-3. **Environment Variables**:
-   Create a `.env` file in the root directory and add your API keys:
-   ```env
-   PORT=3000
-   OMNIROUTE_API_KEY=your_nim_api_key_here
-   OMNIROUTE_GATEWAY_URL=https://integrate.api.nvidia.com/v1
-   ```
+## 🏗️ System Architecture
 
-4. **Run the Application**:
-   ```bash
-   npm start
-   ```
-
-5. **View in Browser**:
-   Open [http://localhost:3000](http://localhost:3000)
-
-## 🚢 Deployment (GitHub & Render)
-
-This repository is ready to be deployed to platforms like [Render](https://render.com) or Heroku.
-
-**To deploy to Render:**
-1. Push this repository to your GitHub account.
-2. Connect the repository to your Render account.
-3. The included `render.yaml` Blueprint will automatically configure the Web Service.
-4. Make sure to add `OMNIROUTE_API_KEY` to your environment variables in the Render dashboard.
-
-## 🐋 Docker Support
-
-A `Dockerfile` and `docker-compose.yml` are included for containerized deployments.
-
-```bash
-docker-compose up --build
+```mermaid
+graph TD
+    User[User / Client Interface] -->|Submits Text or Product URL| Express[Express.js REST API :3000]
+    Express -->|URL Detected| Scraper[Cheerio + JSON-LD Schema Scraper]
+    Scraper -->|Extracted HTML Metadata| AI[NVIDIA Nemotron 3 Ultra 550B]
+    Express -->|Raw Review Text| AI
+    AI -->|Structured JSON Output| Engine[Price Intelligence & Sentiment Engine]
+    Engine -->|Save Record| SQLite[SQLite WASM - nexis_insights.db]
+    Engine -->|JSON Response| User
 ```
+
+---
+
+## 🚀 Quick Start & Installation
+
+### 1. Clone Repository
+```bash
+git clone https://github.com/voidreformer/nexis-insights.git
+cd nexis-insights
+```
+
+### 2. Install Dependencies
+```bash
+npm install
+```
+
+### 3. Environment Variables
+Copy `.env.example` to `.env` and provide your API keys:
+```env
+PORT=3000
+OMNIROUTE_API_KEY=your_nvidia_nim_or_openrouter_api_key
+OMNIROUTE_GATEWAY_URL=https://integrate.api.nvidia.com/v1
+MODEL_NAME=nvidia/nemotron-3-ultra-550b-a55b
+JWT_SECRET=your_jwt_secret_here
+```
+
+### 4. Run Server
+```bash
+npm start
+```
+Open **`http://localhost:3000`** in your browser!
+
+---
+
+## 📄 License
+Distributed under the MIT License. Built with ❤️ for real-world problem solving.

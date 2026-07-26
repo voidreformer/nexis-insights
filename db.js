@@ -67,8 +67,8 @@ async function initDb() {
         console.log('🗄️ SQLite Database Initialized via sql.js');
         return db;
       } catch (err) {
-        console.error('[Database] Failed to initialize SQLite:', err.message);
-        throw err;
+        console.error('[Database] Warning: SQLite WASM initialization issue:', err.message);
+        return null;
       }
     })();
   }

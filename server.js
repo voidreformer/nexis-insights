@@ -18,7 +18,14 @@ app.use(express.static(__dirname));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'nexis_insights_jwt_secret_2026';
 
-db.initDb().catch(err => console.error('Database initialization error:', err));
+app.use(async (req, res, next) => {
+  try {
+    await db.initDb();
+  } catch (err) {
+    console.error('[Server] DB initialization warning:', err.message);
+  }
+  next();
+});
 
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];

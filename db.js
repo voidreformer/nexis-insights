@@ -3,54 +3,77 @@ const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
-const DB_PATH = process.env.DATABASE_PATH || path.join(__dirname, 'nexis_insights.db');
+const isVercel = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NOW_REGION;
+const defaultDbDir = isVercel ? '/tmp' : __dirname;
+const DB_PATH = process.env.DATABASE_PATH || path.join(defaultDbDir, 'nexis_insights.db');
 
 let db;
 
 function saveDb() {
   if (!db) return;
-  const data = db.export();
-  fs.writeFileSync(DB_PATH, Buffer.from(data));
-}
+  try {
+    const data = db.export();
+    fs.writeFileSync(DB_PATH, Buffer.from(data));
+  } catch (err) {
+    console.error('[Database] Warning: Could not persist DB file:', err.message);
+  }
+let dbInitPromise = null;
 
 async function initDb() {
-  const SQL = await initSqlJs();
+  if (db) return db;
+  if (!dbInitPromise) {
+    dbInitPromise = (async () => {
+      try {
+        const wasmPath = path.join(__dirname, 'node_modules', 'sql.js', 'dist', 'sql-wasm.wasm');
+        const SQL = await initSqlJs(fs.existsSync(wasmPath) ? { locateFile: () => wasmPath } : {});
 
-  if (fs.existsSync(DB_PATH)) {
-    const fileBuffer = fs.readFileSync(DB_PATH);
-    db = new SQL.Database(fileBuffer);
-  } else {
-    db = new SQL.Database();
+        if (fs.existsSync(DB_PATH)) {
+          const fileBuffer = fs.readFileSync(DB_PATH);
+          db = new SQL.Database(fileBuffer);
+        } else {
+          db = new SQL.Database();
+        }
+
+        // Create Users Table
+        db.run(`
+          CREATE TABLE IF NOT EXISTS users (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
+
+        // Create Feedback Analyses History Table
+        db.run(`
+          CREATE TABLE IF NOT EXISTS feedback_analyses (
+            id TEXT PRIMARY KEY,
+            user_id TEXT,
+            input_text TEXT NOT NULL,
+            positive_pct INTEGER NOT NULL,
+            neutral_pct INTEGER NOT NULL,
+            negative_pct INTEGER NOT NULL,
+            pain_points TEXT NOT NULL,
+            feature_requests TEXT NOT NULL,
+            executive_summary TEXT NOT NULL,
+            price_intelligence TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(id)
+          )
+        `);
+
+        saveDb();
+        console.log('🗄️ SQLite Database Initialized via sql.js');
+        return db;
+      } catch (err) {
+        console.error('[Database] Failed to initialize SQLite:', err.message);
+        throw err;
+      }
+    })();
   }
-
-  // Create Users Table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS users (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      email TEXT UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  // Create Feedback Analyses History Table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS feedback_analyses (
-      id TEXT PRIMARY KEY,
-      user_id TEXT,
-      input_text TEXT NOT NULL,
-      positive_pct INTEGER NOT NULL,
-      neutral_pct INTEGER NOT NULL,
-      negative_pct INTEGER NOT NULL,
-      pain_points TEXT NOT NULL,
-      feature_requests TEXT NOT NULL,
-      executive_summary TEXT NOT NULL,
-      price_intelligence TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY(user_id) REFERENCES users(id)
-    )
-  `);
+  return dbInitPromise;
+}
 
   saveDb();
   console.log('🗄️ SQLite Database Initialized via sql.js (nexis_insights.db)');

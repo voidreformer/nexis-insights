@@ -1,12 +1,12 @@
 # 🔮 Nexis Insights — Universal Product Feedback & Price Intelligence Engine
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-02productfeedbackanalyzer.vercel.app-000000?style=for-the-badge&logo=vercel)](https://02productfeedbackanalyzer.vercel.app)
+[![Live App](https://img.shields.io/badge/🌐_Live_App-02productfeedbackanalyzer.vercel.app-000000?style=for-the-badge&logo=vercel)](https://02productfeedbackanalyzer.vercel.app)
 ![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge)
 ![AI Engine](https://img.shields.io/badge/AI%20Engine-NVIDIA%20Nemotron%203%20Ultra%20550B-76B900?style=for-the-badge&logo=nvidia)
 ![Database](https://img.shields.io/badge/Database-SQLite%20WASM%20(sql.js)-003B57?style=for-the-badge&logo=sqlite)
 ![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)
 
-> 🚀 **Live Production Demo:** **[https://02productfeedbackanalyzer.vercel.app](https://02productfeedbackanalyzer.vercel.app)**
+> 🚀 **Official Production Web App:** **[https://02productfeedbackanalyzer.vercel.app](https://02productfeedbackanalyzer.vercel.app)**
 >
 > **Nexis Insights** is a production-grade, real-world AI engine that extracts sentiment, key pain points, feature requests, and category-matched price intelligence from customer reviews or live e-commerce product URLs.
 >

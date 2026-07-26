@@ -405,7 +405,11 @@ app.post('/api/analyze', authenticateToken, async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Nexis Insights API running on port ${PORT}`);
-  console.log(`🌍 Universal Multi-Category Price & Product Intelligence Engine Active`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Nexis Insights API running on port ${PORT}`);
+    console.log(`🌍 Universal Multi-Category Price & Product Intelligence Engine Active`);
+  });
+}
+
+module.exports = app;

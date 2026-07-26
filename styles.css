@@ -1,33 +1,44 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
-/* OPEN DESIGN SYSTEM - PREMIUM DARK MODE & GLASSMORPHISM */
+/* OPEN DESIGN SYSTEM - CUSTOM USER COLOR PALETTE */
 :root {
-  /* Colors */
-  --bg-darker: #06080F;
-  --bg-dark: #0A0D17;
-  --bg-card: rgba(17, 21, 36, 0.4);
-  --bg-card-hover: rgba(22, 28, 48, 0.6);
-  --text-main: #F3F4F6;
-  --text-muted: #9CA3AF;
+  /* User Palette Hex Tokens */
+  --palette-olive: #496600;     /* Deep Olive Green (RGB 73, 102, 0) */
+  --palette-maroon: #660E00;    /* Crimson Dark Maroon (RGB 102, 14, 0) */
+  --palette-navy: #002566;      /* Deep Midnight Navy (RGB 0, 37, 102) */
+  --palette-lime: #97BB3E;      /* Vibrant Lime Green (RGB 151, 187, 62) */
+  --palette-coral: #E68474;     /* Warm Coral Rose (RGB 230, 132, 116) */
+
+  /* Application UI System Colors */
+  --bg-darker: #020919;
+  --bg-dark: #041029;
+  --bg-card: rgba(0, 37, 102, 0.42);
+  --bg-card-hover: rgba(0, 37, 102, 0.7);
+  --text-main: #F8FAFC;
+  --text-muted: #CBD5E1;
 
   /* Accents */
-  --accent-primary: #7C3AED;
-  --accent-primary-hover: #8B5CF6;
-  --accent-primary-glow: rgba(124, 58, 237, 0.25);
+  --accent-primary: var(--palette-lime);            /* #97BB3E */
+  --accent-primary-hover: #A8CE46;
+  --accent-primary-glow: rgba(151, 187, 62, 0.35);
 
-  --accent-secondary: #EC4899;
-  --accent-secondary-glow: rgba(236, 72, 153, 0.25);
+  --accent-secondary: var(--palette-coral);          /* #E68474 */
+  --accent-secondary-glow: rgba(230, 132, 116, 0.35);
 
-  /* Semantic */
-  --status-positive: #10B981;
-  --status-neutral: #6366F1;
-  --status-negative: #EF4444;
+  --accent-olive: var(--palette-olive);              /* #496600 */
+  --accent-maroon: var(--palette-maroon);            /* #660E00 */
+  --accent-navy: var(--palette-navy);                /* #002566 */
+
+  /* Semantic Status Indicators */
+  --status-positive: var(--palette-lime);            /* #97BB3E */
+  --status-neutral: #38BDF8;
+  --status-negative: var(--palette-coral);           /* #E68474 */
 
   /* Borders & Shadows */
-  --border-light: rgba(255, 255, 255, 0.08);
-  --border-focus: rgba(124, 58, 237, 0.5);
-  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  --shadow-glow: 0 0 20px var(--accent-primary-glow);
+  --border-light: rgba(151, 187, 62, 0.18);
+  --border-focus: rgba(151, 187, 62, 0.6);
+  --shadow-glass: 0 8px 32px 0 rgba(0, 37, 102, 0.5);
+  --shadow-glow: 0 0 24px var(--accent-primary-glow);
 
   /* Radii */
   --radius-sm: 8px;
@@ -808,9 +819,9 @@ body::after {
    HERO INTRODUCTION BANNER & HOW IT WORKS FLOW STYLING
    ========================================================================== */
 .hero-intro-card {
-  background: linear-gradient(135deg, rgba(14, 18, 32, 0.95), rgba(30, 20, 50, 0.85));
-  border: 1px solid rgba(236, 72, 153, 0.25);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(236, 72, 153, 0.05);
+  background: linear-gradient(135deg, rgba(0, 37, 102, 0.85), rgba(73, 102, 0, 0.4), rgba(102, 14, 0, 0.35));
+  border: 1px solid rgba(151, 187, 62, 0.3);
+  box-shadow: 0 12px 40px rgba(0, 37, 102, 0.6), inset 0 0 30px rgba(151, 187, 62, 0.08);
   padding: 32px;
   border-radius: var(--radius-lg);
   display: flex;

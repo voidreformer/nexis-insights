@@ -1,15 +1,28 @@
 {
-  "name": "nexis-insight",
+  "name": "@voidreformer/nexis-insights",
   "version": "1.0.0",
-  "description": "Nexis Insights - Product Feedback Analyzer with OmniRoute Fallback",
+  "description": "Universal Product Feedback & Multi-Category Price Intelligence Engine powered by NVIDIA Nemotron 3 Ultra 550B & WASM SQLite",
   "main": "server.js",
-  "scripts": {
-    "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/voidreformer/nexis-insights.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "nvidia-nemotron",
+    "ai-product-intelligence",
+    "price-tracker",
+    "sentiment-analysis",
+    "sqlite-wasm",
+    "e-commerce"
+  ],
+  "author": "voidreformer",
+  "license": "MIT",
   "type": "commonjs",
   "dependencies": {
     "axios": "^1.18.1",

@@ -138,6 +138,29 @@ body::after {
   padding: 12px;
 }
 
+/* Sidebar Toggle Buttons (Hardcore Palette #97BB3E) */
+.sidebar-toggle-btn, .workspace-sidebar-toggle {
+  background: rgba(151, 187, 62, 0.12);
+  border: 1px solid var(--border-light);
+  color: var(--palette-lime);
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition);
+}
+
+.sidebar-toggle-btn:hover, .workspace-sidebar-toggle:hover {
+  background: var(--palette-lime);
+  color: #020817;
+  box-shadow: 0 0 16px var(--accent-primary-glow);
+}
+
 .brand {
   display: flex;
   align-items: center;

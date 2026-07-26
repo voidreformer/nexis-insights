@@ -326,6 +326,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Results Sub-Tabs Switcher (Breathable UI)
+  const subtabSentimentBtn = document.getElementById('subtab-sentiment-btn');
+  const subtabPriceBtn = document.getElementById('subtab-price-btn');
+  const subtabSentimentView = document.getElementById('subtab-sentiment-view');
+  const subtabPriceView = document.getElementById('subtab-price-view');
+
+  if (subtabSentimentBtn && subtabPriceBtn) {
+    subtabSentimentBtn.addEventListener('click', () => {
+      subtabSentimentBtn.classList.add('active');
+      subtabPriceBtn.classList.remove('active');
+      if (subtabSentimentView) subtabSentimentView.classList.remove('hidden');
+      if (subtabPriceView) subtabPriceView.classList.add('hidden');
+    });
+
+    subtabPriceBtn.addEventListener('click', () => {
+      subtabPriceBtn.classList.add('active');
+      subtabSentimentBtn.classList.remove('active');
+      if (subtabPriceView) subtabPriceView.classList.remove('hidden');
+      if (subtabSentimentView) subtabSentimentView.classList.add('hidden');
+    });
+  }
+
   // Clean Initial Startup - No pre-filled dummy text
   if (!inputEl.value) {
     inputEl.value = '';

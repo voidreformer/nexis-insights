@@ -70,101 +70,104 @@
           </div>
         </header>
 
-        <!-- 🔮 AI INTRODUCTION & HOW IT WORKS BANNER -->
-        <section class="glass-panel hero-intro-card">
-          <div class="hero-header">
-            <div class="hero-badge">
+        <!-- 🔮 COLLAPSIBLE AI GUIDE ACCORDION -->
+        <details class="hero-intro-accordion" style="margin-bottom: 24px;">
+          <summary class="hero-accordion-summary">
+            <div class="summary-title">
               <span class="hero-icon">✨</span>
-              <span>Powered by NVIDIA Nemotron 550B & WASM SQLite</span>
+              <span><strong>How Nexis Insights Works</strong> — 3-Step AI Pipeline & Core Benefits</span>
             </div>
-            <h2 class="hero-title">How Nexis Insights Works for You</h2>
-            <p class="hero-desc">
-              Paste any raw customer reviews or an e-commerce product link (Amazon, Myntra, Flipkart, Croma). Our AI engine extracts genuine buyer sentiments, filters out fake promotional noise, and calculates real category price intelligence.
-            </p>
-          </div>
+            <span class="accordion-arrow">▼</span>
+          </summary>
 
-          <!-- 3-Step Pipeline Flow -->
-          <div class="step-flow-grid">
-            <div class="step-card">
-              <div class="step-number">01</div>
-              <div class="step-content">
-                <h4>🌐 Smart Web Scraping</h4>
-                <p>Scrapes JSON-LD product price metadata, images, and live customer reviews from top retail stores.</p>
-              </div>
+          <section class="glass-panel hero-intro-card" style="margin-top: 16px;">
+            <div class="hero-header">
+              <p class="hero-desc">
+                Paste any raw customer reviews or an e-commerce product link (Amazon, Myntra, Flipkart, Croma). Our AI engine extracts genuine buyer sentiments, filters out fake promotional noise, and calculates real category price intelligence.
+              </p>
             </div>
-            <div class="step-card">
-              <div class="step-number">02</div>
-              <div class="step-content">
-                <h4>🔮 Deep AI Analysis</h4>
-                <p>NVIDIA Nemotron 550B analyzes sentiment %, aggregates key pain points & feature requests.</p>
-              </div>
-            </div>
-            <div class="step-card">
-              <div class="step-number">03</div>
-              <div class="step-content">
-                <h4>📊 Price & SQLite Logging</h4>
-                <p>Compares category competitor prices, plots 6-month trends & saves report to your WASM database.</p>
-              </div>
-            </div>
-          </div>
 
-          <!-- Key Benefits Grid -->
-          <div class="benefit-card-grid">
-            <div class="benefit-card">
-              <span class="benefit-icon">🛡️</span>
-              <div>
-                <h5>Zero Fake Reviews</h5>
-                <p>Filters out paid influencer fluff to give you raw, unedited buyer feedback.</p>
+            <!-- 3-Step Pipeline Flow -->
+            <div class="step-flow-grid">
+              <div class="step-card">
+                <div class="step-number">01</div>
+                <div class="step-content">
+                  <h4>🌐 Smart Web Scraping</h4>
+                  <p>Scrapes JSON-LD product price metadata, images, and live customer reviews from top retail stores.</p>
+                </div>
+              </div>
+              <div class="step-card">
+                <div class="step-number">02</div>
+                <div class="step-content">
+                  <h4>🔮 Deep AI Analysis</h4>
+                  <p>NVIDIA Nemotron 550B analyzes sentiment %, aggregates key pain points & feature requests.</p>
+                </div>
+              </div>
+              <div class="step-card">
+                <div class="step-number">03</div>
+                <div class="step-content">
+                  <h4>📊 Price & SQLite Logging</h4>
+                  <p>Compares category competitor prices, plots 6-month trends & saves report to your WASM database.</p>
+                </div>
               </div>
             </div>
-            <div class="benefit-card">
-              <span class="benefit-icon">💰</span>
-              <div>
-                <h5>Anti-Price Gouging</h5>
-                <p>Identifies fake discounts and alerts you when a product is actually at its lowest historical price.</p>
-              </div>
-            </div>
-            <div class="benefit-card">
-              <span class="benefit-icon">🔒</span>
-              <div>
-                <h5>Local WASM SQLite</h5>
-                <p>Your history is saved in an embedded browser database (`sql.js`), 100% private and CSV exportable.</p>
-              </div>
-            </div>
-          </div>
-        </section>
 
-        <div class="dashboard-grid" style="margin-top: 24px;">
+            <!-- Key Benefits Grid -->
+            <div class="benefit-card-grid">
+              <div class="benefit-card">
+                <span class="benefit-icon">🛡️</span>
+                <div>
+                  <h5>Zero Fake Reviews</h5>
+                  <p>Filters out paid influencer fluff to give you raw, unedited buyer feedback.</p>
+                </div>
+              </div>
+              <div class="benefit-card">
+                <span class="benefit-icon">💰</span>
+                <div>
+                  <h5>Anti-Price Gouging</h5>
+                  <p>Identifies fake discounts and alerts you when a product is actually at its lowest historical price.</p>
+                </div>
+              </div>
+              <div class="benefit-card">
+                <span class="benefit-icon">🔒</span>
+                <div>
+                  <h5>Local WASM SQLite</h5>
+                  <p>Your history is saved in an embedded browser database (`sql.js`), 100% private and CSV exportable.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+        </details>
+
+        <!-- 📥 ANALYZER INPUT & STATS WORKSPACE -->
+        <div class="dashboard-grid">
           <!-- Input section -->
           <section class="glass-panel input-section">
             <div class="panel-header">
-              <h3>Input Feedback Data</h3>
-              <span class="badge">NVIDIA Nemotron / OpenRouter</span>
+              <h3>Input Feedback Data / Product URL</h3>
+              <span class="badge">NVIDIA Nemotron 550B</span>
             </div>
             <div class="input-wrapper">
-              <textarea id="feedback-input" rows="8" placeholder="Example:
-- 'The checkout page keeps crashing on Safari. Super frustrating!'
-- 'I love the new dark mode, but I wish we could export reports in PDF format.'
-- 'Amazing app! Saved me 5 hours this week.'"></textarea>
+              <textarea id="feedback-input" rows="6" placeholder="Paste an Amazon, Myntra, Flipkart product URL OR paste customer review text here..."></textarea>
             </div>
             <div class="input-actions">
-              <button id="clear-btn" class="btn-glow">Clear</button>
+              <button id="clear-btn" class="btn-glow">Clear Input</button>
               <button id="analyze-btn" class="btn-primary">Analyze Comments</button>
             </div>
           </section>
 
-          <!-- Stats Overview (Always visible) -->
+          <!-- Stats Overview -->
           <section class="glass-panel stats-panel">
             <div class="panel-header">
-              <h3>Quick Stats</h3>
+              <h3>Quick Analytics</h3>
               <span class="badge">SQLite Persistence</span>
             </div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-              <div class="metric-card" style="border-top: 2px solid var(--accent-primary);">
+              <div class="metric-card" style="border-top: 2px solid var(--palette-lime);">
                 <span class="metric-label">Analyzed Comments</span>
                 <span class="metric-value" id="stat-parsed">0</span>
               </div>
-              <div class="metric-card" style="border-top: 2px solid var(--accent-secondary);">
+              <div class="metric-card" style="border-top: 2px solid var(--palette-coral);">
                 <span class="metric-label">Positive Sentiment</span>
                 <span class="metric-value" id="stat-positive">0%</span>
               </div>
@@ -172,87 +175,98 @@
           </section>
         </div>
 
-        <!-- Analysis Results Panel (Revealed upon click) -->
-        <div id="results-panel" class="results-content hidden">
-          <div class="glass-panel" style="gap: 24px;">
-            <div class="panel-header">
-              <h3>Analysis Output</h3>
-              <button id="export-btn" class="btn-glow"><span class="icon">💾</span> Export Summary</button>
-            </div>
+        <!-- 📊 RESULTS WORKSPACE WITH BREATHABLE SUB-TABS -->
+        <div id="results-panel" class="results-content hidden" style="margin-top: 32px;">
+          <!-- Sub-Tab Navigation Bar -->
+          <div class="results-subtabs">
+            <button class="subtab-btn active" id="subtab-sentiment-btn">📊 Sentiment & Feedback Breakdown</button>
+            <button class="subtab-btn" id="subtab-price-btn">💰 Price Intelligence & 6-Month Trend</button>
+            <button id="export-btn" class="btn-glow" style="margin-left: auto;"><span class="icon">💾</span> Export Summary</button>
+          </div>
 
-            <!-- Sentiment Row -->
-            <div class="sentiment-row">
-              <div class="metric-card positive">
-                <span class="metric-label">Positive</span>
-                <span class="metric-value" id="pos-pct">0%</span>
-                <div class="bar-outer" style="width: 100%; height: 4px; background: rgba(255,255,255,0.05); margin-top: 8px; border-radius: 2px; overflow: hidden;">
-                  <div class="bar-inner pos" id="pos-bar" style="width: 0%; height: 100%; background: var(--status-positive); transition: width 1s;"></div>
+          <!-- SUB-TAB 1: SENTIMENT & PAIN POINTS -->
+          <div id="subtab-sentiment-view" class="subtab-view">
+            <div class="glass-panel" style="gap: 24px;">
+              <div class="panel-header">
+                <h3>Customer Sentiment & Pain Points Breakdown</h3>
+              </div>
+
+              <!-- Sentiment Row -->
+              <div class="sentiment-row">
+                <div class="metric-card positive">
+                  <span class="metric-label">Positive</span>
+                  <span class="metric-value" id="pos-pct">0%</span>
+                  <div class="bar-outer" style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); margin-top: 8px; border-radius: 3px; overflow: hidden;">
+                    <div class="bar-inner pos" id="pos-bar" style="width: 0%; height: 100%; background: var(--status-positive); transition: width 1s;"></div>
+                  </div>
+                </div>
+                <div class="metric-card neutral">
+                  <span class="metric-label">Neutral</span>
+                  <span class="metric-value" id="neu-pct">0%</span>
+                  <div class="bar-outer" style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); margin-top: 8px; border-radius: 3px; overflow: hidden;">
+                    <div class="bar-inner neu" id="neu-bar" style="width: 0%; height: 100%; background: var(--status-neutral); transition: width 1s;"></div>
+                  </div>
+                </div>
+                <div class="metric-card negative">
+                  <span class="metric-label">Negative</span>
+                  <span class="metric-value" id="neg-pct">0%</span>
+                  <div class="bar-outer" style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); margin-top: 8px; border-radius: 3px; overflow: hidden;">
+                    <div class="bar-inner neg" id="neg-bar" style="width: 0%; height: 100%; background: var(--status-negative); transition: width 1s;"></div>
+                  </div>
                 </div>
               </div>
-              <div class="metric-card neutral">
-                <span class="metric-label">Neutral</span>
-                <span class="metric-value" id="neu-pct">0%</span>
-                <div class="bar-outer" style="width: 100%; height: 4px; background: rgba(255,255,255,0.05); margin-top: 8px; border-radius: 2px; overflow: hidden;">
-                  <div class="bar-inner neu" id="neu-bar" style="width: 0%; height: 100%; background: var(--status-neutral); transition: width 1s;"></div>
+
+              <!-- Breakdowns -->
+              <div class="breakdown-grid">
+                <div class="breakdown-card">
+                  <h4>🚨 Key Pain Points</h4>
+                  <ul class="glass-list" id="pain-points-list">
+                    <!-- JS injected -->
+                  </ul>
+                </div>
+                <div class="breakdown-card">
+                  <h4>💡 Feature Requests</h4>
+                  <ul class="glass-list" id="features-list">
+                    <!-- JS injected -->
+                  </ul>
                 </div>
               </div>
-              <div class="metric-card negative">
-                <span class="metric-label">Negative</span>
-                <span class="metric-value" id="neg-pct">0%</span>
-                <div class="bar-outer" style="width: 100%; height: 4px; background: rgba(255,255,255,0.05); margin-top: 8px; border-radius: 2px; overflow: hidden;">
-                  <div class="bar-inner neg" id="neg-bar" style="width: 0%; height: 100%; background: var(--status-negative); transition: width 1s;"></div>
-                </div>
-              </div>
-            </div>
 
-            <!-- Breakdowns -->
-            <div class="breakdown-grid">
-              <div class="breakdown-card">
-                <h4>🚨 Key Pain Points</h4>
-                <ul class="glass-list" id="pain-points-list">
-                  <!-- JS injected -->
-                </ul>
+              <!-- Executive Summary -->
+              <div class="summary-card">
+                <h4>AI Executive Summary</h4>
+                <p class="glass-text" id="ai-writeup">
+                  <!-- JS Injected -->
+                </p>
               </div>
-              <div class="breakdown-card">
-                <h4>💡 Feature Requests</h4>
-                <ul class="glass-list" id="features-list">
-                  <!-- JS injected -->
-                </ul>
-              </div>
-            </div>
-
-            <!-- Executive Summary -->
-            <div class="summary-card">
-              <h4>AI Executive Summary</h4>
-              <p class="glass-text" id="ai-writeup">
-                <!-- JS Injected -->
-              </p>
             </div>
           </div>
-        </div>
 
-        <!-- 💰 Price Intelligence -->
-        <div class="card card-direction-vertical card-variant-stroke price-intel-card hidden" id="price-intel-card" style="margin-top: 2rem; padding: 1.5rem; background: var(--sds-color-background-default-default);">
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--sds-color-border-default-default); padding-bottom: 1rem; margin-bottom: 1.5rem;">
-            <h3 style="color: var(--sds-color-text-default-default); margin: 0; font: var(--sds-font-heading);">💰 Price Intelligence</h3>
-            <div id="buy-recommendation" class="tag" style="background: var(--sds-color-background-brand-default); color: var(--sds-color-text-brand-on-brand); padding: 4px 12px; border-radius: var(--sds-size-radius-200); font: var(--sds-font-body-base); font-weight: bold;">WAIT</div>
-          </div>
-          
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-            <div style="display: flex; flex-direction: column; gap: var(--sds-size-space-400);">
-              <span style="color: var(--sds-color-text-default-secondary); font: var(--sds-font-body-base);">Detected Price</span>
-              <h2 id="detected-price" style="font-size: 2.5rem; color: var(--sds-color-text-default-default); margin: 0;">₹0</h2>
-              <p id="price-reasoning" style="color: var(--sds-color-text-default-secondary); line-height: var(--global-line-height-body); margin-bottom: 1rem;">...</p>
+          <!-- SUB-TAB 2: PRICE INTELLIGENCE -->
+          <div id="subtab-price-view" class="subtab-view hidden">
+            <div class="glass-panel price-intel-card" id="price-intel-card">
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light); padding-bottom: 1rem;">
+                <h3 style="color: #FFFFFF; margin: 0; font-family: var(--font-display);">💰 Category Price Intelligence</h3>
+                <div id="buy-recommendation" class="tag" style="background: var(--palette-lime); color: #020817; padding: 6px 16px; border-radius: var(--radius-xl); font-weight: bold;">WAIT</div>
+              </div>
               
-              <h4 style="color: var(--sds-color-text-default-secondary); font: var(--sds-font-heading); margin-bottom: 0.5rem;">Competitor Prices</h4>
-              <ul id="competitor-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
-                <!-- JS Injected -->
-              </ul>
-            </div>
-            
-            <div class="card card-variant-stroke" style="padding: 1rem; background: var(--sds-color-background-default-default);">
-              <h4 style="color: var(--sds-color-text-default-secondary); text-align: center; margin-bottom: 1rem;">6-Month Price Trend</h4>
-              <canvas id="priceTrendChart"></canvas>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;" class="price-grid">
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                  <span style="color: var(--text-muted); font-size: 14px;">Detected Live Market Price</span>
+                  <h2 id="detected-price" style="font-size: 2.5rem; color: #FFFFFF; margin: 0;">₹0</h2>
+                  <p id="price-reasoning" style="color: var(--text-muted); line-height: 1.6;">...</p>
+                  
+                  <h4 style="color: #FFFFFF; margin-bottom: 0.5rem;">Competitor Retail Outlets</h4>
+                  <ul id="competitor-list" style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
+                    <!-- JS Injected -->
+                  </ul>
+                </div>
+                
+                <div class="glass-panel" style="padding: 1.5rem; background: rgba(0, 20, 55, 0.4);">
+                  <h4 style="color: #FFFFFF; text-align: center; margin-bottom: 1rem;">6-Month Historical Price Trend</h4>
+                  <canvas id="priceTrendChart"></canvas>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -820,8 +820,84 @@ body::after {
 }
 
 /* ==========================================================================
-   HERO INTRODUCTION BANNER & HOW IT WORKS FLOW STYLING
+   HERO ACCORDION TOGGLE & BREATHABLE SUB-TAB STYLING
    ========================================================================== */
+.hero-intro-accordion {
+  background: rgba(0, 37, 102, 0.4);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 12px 18px;
+  transition: var(--transition);
+}
+.hero-intro-accordion[open] {
+  background: rgba(0, 37, 102, 0.6);
+}
+
+.hero-accordion-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  color: #FFFFFF;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--font-display);
+}
+.hero-accordion-summary::-webkit-details-marker {
+  display: none;
+}
+.summary-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.accordion-arrow {
+  color: var(--palette-lime);
+  font-size: 12px;
+  transition: transform 0.3s ease;
+}
+.hero-intro-accordion[open] .accordion-arrow {
+  transform: rotate(180deg);
+}
+
+/* Results Breathable Sub-Tabs */
+.results-subtabs {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.subtab-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-light);
+  color: var(--text-muted);
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.subtab-btn:hover {
+  background: rgba(151, 187, 62, 0.1);
+  color: #FFFFFF;
+}
+.subtab-btn.active {
+  background: var(--palette-lime);
+  color: #020817;
+  border-color: var(--palette-lime);
+  box-shadow: 0 4px 16px var(--accent-primary-glow);
+}
+
+.subtab-view.hidden {
+  display: none;
+}
+
 .hero-intro-card {
   background: linear-gradient(135deg, rgba(0, 37, 102, 0.85), rgba(73, 102, 0, 0.4), rgba(102, 14, 0, 0.35));
   border: 1px solid rgba(151, 187, 62, 0.3);

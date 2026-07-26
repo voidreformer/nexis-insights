@@ -142,52 +142,76 @@ function detectCategoryAndRetailers(title, url, text) {
   };
 }
 
+// URL Product Slug Parser for Amazon/Flipkart/Myntra/E-commerce links
+function parseProductSlugFromUrl(url) {
+  try {
+    const urlObj = new URL(url);
+    const pathname = urlObj.pathname;
+    const parts = pathname.split('/').filter(p => p.length > 2 && !['dp', 'gp', 'product', 'buy', 'p', 'itm', 'in'].includes(p));
+    if (parts.length > 0) {
+      let slug = parts[0];
+      let cleanTitle = slug.replace(/[-_]/g, ' ').trim();
+      if (cleanTitle.length > 3) {
+        return cleanTitle.charAt(0).toUpperCase() + cleanTitle.slice(1);
+      }
+    }
+  } catch(e) {}
+  return null;
+}
+
 // Universal Structured Metadata & Price Extractor
 function extractProductMetadata($, url, fullText) {
   let productInfo = {
-    title: $('title').text().trim() || $('h1').first().text().trim(),
+    title: $ ? ($('title').text().trim() || $('h1').first().text().trim()) : null,
     price: null,
     currency: '₹',
     brand: null
   };
 
-  // 1. JSON-LD Schema parsing
-  $('script[type="application/ld+json"]').each((_, el) => {
-    try {
-      const data = JSON.parse($(el).html());
-      const items = Array.isArray(data) ? data : [data];
-      for (const item of items) {
-        if (item['@type'] === 'Product' || item.offers) {
-          if (item.name) productInfo.title = item.name;
-          if (item.brand) productInfo.brand = typeof item.brand === 'object' ? item.brand.name : item.brand;
-          const offer = Array.isArray(item.offers) ? item.offers[0] : item.offers;
-          if (offer) {
-            if (offer.price) productInfo.price = offer.price;
-            if (offer.priceCurrency) productInfo.currency = offer.priceCurrency === 'INR' ? '₹' : (offer.priceCurrency === 'USD' ? '$' : offer.priceCurrency);
-          }
-        }
-      }
-    } catch(e) {}
-  });
-
-  // 2. OpenGraph / Twitter Meta Tags
-  if (!productInfo.price) {
-    const metaPrice = $('meta[property="og:price:amount"]').attr('content') || 
-                      $('meta[property="product:price:amount"]').attr('content') ||
-                      $('meta[name="price"]').attr('content');
-    if (metaPrice) productInfo.price = metaPrice;
-
-    const metaCurr = $('meta[property="og:price:currency"]').attr('content') || 
-                     $('meta[property="product:price:currency"]').attr('content');
-    if (metaCurr) productInfo.currency = metaCurr === 'INR' ? '₹' : (metaCurr === 'USD' ? '$' : metaCurr);
+  const slugTitle = parseProductSlugFromUrl(url);
+  if (slugTitle && (!productInfo.title || productInfo.title.toLowerCase().includes('amazon') || productInfo.title.length < 5)) {
+    productInfo.title = slugTitle;
   }
 
-  // 3. Regex Fallback
-  if (!productInfo.price) {
-    const priceRegex = /(?:₹|Rs\.?|INR|\$)\s?([\d,]{2,7})/i;
-    const match = fullText.match(priceRegex);
-    if (match && match[1]) {
-      productInfo.price = match[1].replace(/,/g, '');
+  if ($) {
+    // 1. JSON-LD Schema parsing
+    $('script[type="application/ld+json"]').each((_, el) => {
+      try {
+        const data = JSON.parse($(el).html());
+        const items = Array.isArray(data) ? data : [data];
+        for (const item of items) {
+          if (item['@type'] === 'Product' || item.offers) {
+            if (item.name) productInfo.title = item.name;
+            if (item.brand) productInfo.brand = typeof item.brand === 'object' ? item.brand.name : item.brand;
+            const offer = Array.isArray(item.offers) ? item.offers[0] : item.offers;
+            if (offer) {
+              if (offer.price) productInfo.price = offer.price;
+              if (offer.priceCurrency) productInfo.currency = offer.priceCurrency === 'INR' ? '₹' : (offer.priceCurrency === 'USD' ? '$' : offer.priceCurrency);
+            }
+          }
+        }
+      } catch(e) {}
+    });
+
+    // 2. OpenGraph / Twitter Meta Tags
+    if (!productInfo.price) {
+      const metaPrice = $('meta[property="og:price:amount"]').attr('content') || 
+                        $('meta[property="product:price:amount"]').attr('content') ||
+                        $('meta[name="price"]').attr('content');
+      if (metaPrice) productInfo.price = metaPrice;
+
+      const metaCurr = $('meta[property="og:price:currency"]').attr('content') || 
+                       $('meta[property="product:price:currency"]').attr('content');
+      if (metaCurr) productInfo.currency = metaCurr === 'INR' ? '₹' : (metaCurr === 'USD' ? '$' : metaCurr);
+    }
+
+    // 3. Regex Fallback
+    if (!productInfo.price && fullText) {
+      const priceRegex = /(?:₹|Rs\.?|INR|\$)\s?([\d,]{2,7})/i;
+      const match = fullText.match(priceRegex);
+      if (match && match[1]) {
+        productInfo.price = match[1].replace(/,/g, '');
+      }
     }
   }
 
@@ -324,8 +348,13 @@ app.post('/api/analyze', authenticateToken, async (req, res) => {
 
         scrapedData.push(metaHeader + scrapedText.substring(0, 12000));
       } catch (scrapeErr) {
-        console.error(`[Scraper] Failed to scrape ${fetchUrl}:`, scrapeErr.message);
-        scrapedData.push(`--- URL ${fetchUrl} (Page protected by captcha, analyze based on text prompt title) ---`);
+        console.error(`[Scraper] Notice: Scraping fallback for ${fetchUrl}:`, scrapeErr.message);
+        const slugTitle = parseProductSlugFromUrl(fetchUrl);
+        extractedMeta = extractProductMetadata(null, fetchUrl, '');
+        if (slugTitle && !extractedMeta.title) extractedMeta.title = slugTitle;
+        categoryInfo = detectCategoryAndRetailers(extractedMeta.title || '', fetchUrl, '');
+        const titleText = extractedMeta.title || fetchUrl;
+        scrapedData.push(`--- E-Commerce Product Link Analysis (${titleText}) ---\nDetected Product Title: ${titleText}\nTarget Outlets: ${categoryInfo.stores.join(', ')}`);
       }
     }
 

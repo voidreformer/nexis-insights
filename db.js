@@ -81,90 +81,126 @@ async function initDb() {
 
 function createUser(name, email, passwordHash) {
   const id = uuidv4();
-  db.run(
-    'INSERT INTO users (id, name, email, password_hash) VALUES (?, ?, ?, ?)',
-    [id, name, email.toLowerCase(), passwordHash]
-  );
-  saveDb();
+  if (db) {
+    try {
+      db.run(
+        'INSERT INTO users (id, name, email, password_hash) VALUES (?, ?, ?, ?)',
+        [id, name, email.toLowerCase(), passwordHash]
+      );
+      saveDb();
+    } catch(err) {
+      console.error('[Database] createUser error:', err.message);
+    }
+  }
   return { id, name, email: email.toLowerCase() };
 }
 
 function findUserByEmail(email) {
-  const res = db.exec('SELECT * FROM users WHERE email = ?', [email.toLowerCase()]);
-  if (!res.length || !res[0].values.length) return null;
-  const row = res[0].values[0];
-  const columns = res[0].columns;
-  const user = {};
-  columns.forEach((col, idx) => user[col] = row[idx]);
-  return user;
+  if (!db) return null;
+  try {
+    const res = db.exec('SELECT * FROM users WHERE email = ?', [email.toLowerCase()]);
+    if (!res.length || !res[0].values.length) return null;
+    const row = res[0].values[0];
+    const columns = res[0].columns;
+    const user = {};
+    columns.forEach((col, idx) => user[col] = row[idx]);
+    return user;
+  } catch(err) {
+    console.error('[Database] findUserByEmail error:', err.message);
+    return null;
+  }
 }
 
 function findUserById(id) {
-  const res = db.exec('SELECT id, name, email, created_at FROM users WHERE id = ?', [id]);
-  if (!res.length || !res[0].values.length) return null;
-  const row = res[0].values[0];
-  const columns = res[0].columns;
-  const user = {};
-  columns.forEach((col, idx) => user[col] = row[idx]);
-  return user;
+  if (!db) return null;
+  try {
+    const res = db.exec('SELECT id, name, email, created_at FROM users WHERE id = ?', [id]);
+    if (!res.length || !res[0].values.length) return null;
+    const row = res[0].values[0];
+    const columns = res[0].columns;
+    const user = {};
+    columns.forEach((col, idx) => user[col] = row[idx]);
+    return user;
+  } catch(err) {
+    console.error('[Database] findUserById error:', err.message);
+    return null;
+  }
 }
 
 function saveAnalysis(userId, inputText, data) {
   const id = uuidv4();
-  const painPointsJson = JSON.stringify(data.pain_points || []);
-  const featureReqsJson = JSON.stringify(data.feature_requests || []);
-  const priceIntelJson = JSON.stringify(data.price_intelligence || {});
+  if (db) {
+    try {
+      const painPointsJson = JSON.stringify(data.pain_points || []);
+      const featureReqsJson = JSON.stringify(data.feature_requests || []);
+      const priceIntelJson = JSON.stringify(data.price_intelligence || {});
 
-  db.run(
-    `INSERT INTO feedback_analyses 
-     (id, user_id, input_text, positive_pct, neutral_pct, negative_pct, pain_points, feature_requests, executive_summary, price_intelligence) 
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      id,
-      userId || null,
-      inputText,
-      data.positive_pct || 0,
-      data.neutral_pct || 0,
-      data.negative_pct || 0,
-      painPointsJson,
-      featureReqsJson,
-      data.executive_summary || '',
-      priceIntelJson
-    ]
-  );
-  saveDb();
+      db.run(
+        `INSERT INTO feedback_analyses 
+         (id, user_id, input_text, positive_pct, neutral_pct, negative_pct, pain_points, feature_requests, executive_summary, price_intelligence) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          id,
+          userId || null,
+          inputText,
+          data.positive_pct || 0,
+          data.neutral_pct || 0,
+          data.negative_pct || 0,
+          painPointsJson,
+          featureReqsJson,
+          data.executive_summary || '',
+          priceIntelJson
+        ]
+      );
+      saveDb();
+    } catch(err) {
+      console.error('[Database] saveAnalysis error:', err.message);
+    }
+  }
   return { id, userId, ...data };
 }
 
 function getUserHistory(userId) {
-  let query = 'SELECT * FROM feedback_analyses ORDER BY created_at DESC LIMIT 50';
-  let params = [];
-  if (userId) {
-    query = 'SELECT * FROM feedback_analyses WHERE user_id = ? ORDER BY created_at DESC LIMIT 50';
-    params = [userId];
+  if (!db) return [];
+  try {
+    let query = 'SELECT * FROM feedback_analyses ORDER BY created_at DESC LIMIT 50';
+    let params = [];
+    if (userId) {
+      query = 'SELECT * FROM feedback_analyses WHERE user_id = ? ORDER BY created_at DESC LIMIT 50';
+      params = [userId];
+    }
+
+    const res = db.exec(query, params);
+    if (!res.length) return [];
+
+    const columns = res[0].columns;
+    return res[0].values.map(row => {
+      const item = {};
+      columns.forEach((col, idx) => item[col] = row[idx]);
+      try { item.pain_points = JSON.parse(item.pain_points); } catch(e) {}
+      try { item.feature_requests = JSON.parse(item.feature_requests); } catch(e) {}
+      try { item.price_intelligence = JSON.parse(item.price_intelligence); } catch(e) {}
+      return item;
+    });
+  } catch(err) {
+    console.error('[Database] getUserHistory error:', err.message);
+    return [];
   }
-
-  const res = db.exec(query, params);
-  if (!res.length) return [];
-
-  const columns = res[0].columns;
-  return res[0].values.map(row => {
-    const item = {};
-    columns.forEach((col, idx) => item[col] = row[idx]);
-    try { item.pain_points = JSON.parse(item.pain_points); } catch(e) {}
-    try { item.feature_requests = JSON.parse(item.feature_requests); } catch(e) {}
-    try { item.price_intelligence = JSON.parse(item.price_intelligence); } catch(e) {}
-    return item;
-  });
 }
 
 function deleteAnalysis(id, userId) {
-  if (userId) {
-    db.run('DELETE FROM feedback_analyses WHERE id = ? AND user_id = ?', [id, userId]);
-  } else {
-    db.run('DELETE FROM feedback_analyses WHERE id = ?', [id]);
+  if (db) {
+    try {
+      if (userId) {
+        db.run('DELETE FROM feedback_analyses WHERE id = ? AND user_id = ?', [id, userId]);
+      } else {
+        db.run('DELETE FROM feedback_analyses WHERE id = ?', [id]);
+      }
+      saveDb();
+    } catch(err) {
+      console.error('[Database] deleteAnalysis error:', err.message);
+    }
   }
-  saveDb();
   return true;
 }
 

@@ -582,3 +582,120 @@ body::after {
   font-size: 15px;
 }
 
+/* ==========================================================================
+   MOBILE & TABLET RESPONSIVE MEDIA QUERIES (FULL FLUID UI)
+   ========================================================================== */
+
+/* Tablets & Small Laptops (< 1024px) */
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile & Tablets (< 840px) */
+@media (max-width: 840px) {
+  .app-container {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  .glass-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border-light);
+    padding: 16px 20px;
+  }
+
+  .brand {
+    margin-bottom: 16px;
+    justify-content: space-between;
+  }
+
+  .nav-links {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nav-item {
+    padding: 8px 14px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .sidebar-footer {
+    display: none; /* Collapsed into mobile header */
+  }
+
+  .workspace {
+    padding: 20px 16px;
+    gap: 20px;
+    height: auto;
+    overflow-y: visible;
+  }
+
+  .workspace-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .sentiment-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .breakdown-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .price-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .glass-panel {
+    padding: 18px 14px;
+  }
+
+  .input-wrapper textarea {
+    height: 180px;
+    font-size: 14px;
+  }
+
+  .modal-card {
+    width: 95%;
+    padding: 20px 16px;
+  }
+}
+
+/* Ultra Small Mobiles (< 480px) */
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 24px;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+  }
+
+  .btn-primary, .btn-glow {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .input-actions {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .metric-value {
+    font-size: 24px;
+  }
+}
+

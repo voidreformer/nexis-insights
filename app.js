@@ -297,17 +297,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const dateStr = new Date(item.created_at).toLocaleString();
         const price = item.price_intelligence ? item.price_intelligence.detected_price : 'N/A';
         const rec = item.price_intelligence ? item.price_intelligence.buy_recommendation : 'INFO';
-        const badgeBg = rec === 'BUY NOW' ? '#10b981' : (rec === 'WAIT' ? '#f59e0b' : '#3b82f6');
+        const badgeBg = rec === 'BUY NOW' ? 'var(--palette-lime)' : (rec === 'WAIT' ? 'var(--palette-olive)' : 'var(--palette-coral)');
+        const badgeTextColor = rec === 'BUY NOW' ? '#020817' : '#FFFFFF';
 
         const card = document.createElement('div');
         card.className = 'history-card';
-        card.style.cssText = 'background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; margin-bottom: 12px;';
+        card.style.cssText = 'background: rgba(0, 37, 102, 0.4); border: 1px solid var(--border-light); border-radius: 12px; padding: 16px; margin-bottom: 12px;';
         card.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <div style="display: flex; gap: 8px; align-items: center;">
               <span style="font-weight: 700; color: #fff; font-size: 15px;">Report #${item.id.substring(0,8)}</span>
-              <span style="background: ${badgeBg}; color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: 600;">${rec}</span>
-              <span style="background: rgba(255,255,255,0.1); color: var(--accent-primary); font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: 600;">Price: ${price}</span>
+              <span style="background: ${badgeBg}; color: ${badgeTextColor}; font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: 600;">${rec}</span>
+              <span style="background: rgba(151, 187, 62, 0.15); color: var(--palette-lime); font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: 600;">Price: ${price}</span>
             </div>
             <span style="color: var(--text-muted); font-size: 12px;">📅 ${dateStr}</span>
           </div>
@@ -361,7 +362,7 @@ document.addEventListener('DOMContentLoaded', () => {
     analyzeBtn.innerHTML = 'Analyzing...';
     analyzeBtn.disabled = true;
     if (statusIndicator) statusIndicator.textContent = 'Processing via NVIDIA Nemotron...';
-    if (statusIndicator) statusIndicator.style.background = '#f59e0b';
+    if (statusIndicator) statusIndicator.style.background = 'var(--palette-olive)';
 
     const token = getToken();
     const headers = { 'Content-Type': 'application/json' };
@@ -476,11 +477,14 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const recTag = document.getElementById('buy-recommendation');
         if (data.price_intelligence.buy_recommendation.includes('BUY')) {
-          recTag.style.background = 'var(--status-positive, #10b981)';
+          recTag.style.background = 'var(--palette-lime)';
+          recTag.style.color = '#020817';
         } else if (data.price_intelligence.buy_recommendation.includes('WAIT')) {
-          recTag.style.background = 'var(--status-neutral, #f59e0b)';
+          recTag.style.background = 'var(--palette-olive)';
+          recTag.style.color = '#FFFFFF';
         } else {
-          recTag.style.background = 'var(--status-negative, #ef4444)';
+          recTag.style.background = 'var(--palette-coral)';
+          recTag.style.color = '#FFFFFF';
         }
         
         document.getElementById('detected-price').textContent = data.price_intelligence.detected_price;
@@ -490,9 +494,9 @@ document.addEventListener('DOMContentLoaded', () => {
         compList.innerHTML = '';
         if (data.price_intelligence.competitor_prices) {
           data.price_intelligence.competitor_prices.forEach(comp => {
-            compList.innerHTML += `<li class="card card-variant-stroke" style="padding: 8px 12px; display: flex; justify-content: space-between; border-radius: var(--sds-size-radius-200);">
-              <span style="color: var(--sds-color-text-default-secondary);">${comp.store}</span>
-              <span style="font-weight: 600; color: var(--sds-color-text-default-default);">${comp.price}</span>
+            compList.innerHTML += `<li class="card card-variant-stroke" style="padding: 10px 14px; display: flex; justify-content: space-between; border-radius: var(--radius-sm); background: rgba(0, 37, 102, 0.5); border: 1px solid var(--border-light);">
+              <span style="color: var(--text-muted);">${comp.store}</span>
+              <span style="font-weight: 600; color: #FFFFFF;">${comp.price}</span>
             </li>`;
           });
         }
@@ -507,9 +511,9 @@ document.addEventListener('DOMContentLoaded', () => {
               datasets: [{
                 label: 'Price Trend',
                 data: data.price_intelligence.price_trend_last_6_months || [100, 120, 110, 140, 130, 125],
-                borderColor: '#7C3AED',
-                backgroundColor: 'rgba(124, 58, 237, 0.1)',
-                borderWidth: 2,
+                borderColor: '#97BB3E',
+                backgroundColor: 'rgba(151, 187, 62, 0.15)',
+                borderWidth: 2.5,
                 fill: true,
                 tension: 0.4
               }]
@@ -518,8 +522,8 @@ document.addEventListener('DOMContentLoaded', () => {
               responsive: true,
               plugins: { legend: { display: false } },
               scales: { 
-                y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
-                x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                y: { grid: { color: 'rgba(151, 187, 62, 0.1)' }, ticks: { color: '#E2E8F0' } },
+                x: { grid: { display: false }, ticks: { color: '#E2E8F0' } }
               }
             }
           });
@@ -530,14 +534,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (statusIndicator) {
         statusIndicator.textContent = 'AI Model Ready';
-        statusIndicator.style.background = 'rgba(16, 185, 129, 0.2)';
-        statusIndicator.style.color = '#10b981';
+        statusIndicator.style.background = 'rgba(151, 187, 62, 0.2)';
+        statusIndicator.style.color = '#97BB3E';
       }
 
     } catch (err) {
       if (statusIndicator) {
         statusIndicator.textContent = 'Error: ' + err.message;
-        statusIndicator.style.background = '#ef4444';
+        statusIndicator.style.background = 'var(--palette-maroon)';
       }
     } finally {
       analyzeBtn.innerHTML = 'Analyze Comments';

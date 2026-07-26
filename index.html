@@ -305,11 +305,11 @@
           <div class="glass-panel">
             <div class="panel-header">
               <h3>🤖 AI Engine Configuration</h3>
-              <span class="badge" style="background: var(--status-positive); color: #fff;">Connected</span>
+              <span class="badge" style="background: var(--palette-lime); color: #020817;">Connected</span>
             </div>
             <div class="form-group" style="margin-bottom: 16px;">
               <label style="color: var(--text-muted); font-size: 13px; display: block; margin-bottom: 6px;">Primary AI Model</label>
-              <select id="setting-ai-model" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1);">
+              <select id="setting-ai-model" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0, 37, 102, 0.4); color: #fff; border: 1px solid var(--border-light);">
                 <option value="nvidia/nemotron-3-ultra-550b-a55b" selected>NVIDIA Nemotron 3 Ultra 550B (Default)</option>
                 <option value="meta/llama-3.1-405b-instruct">Meta Llama 3.1 405B Instruct</option>
                 <option value="mistralai/mixtral-8x22b-instruct">Mixtral 8x22B Instruct</option>
@@ -330,11 +330,11 @@
             </div>
             <div class="form-group" style="margin-bottom: 16px;">
               <label style="color: var(--text-muted); font-size: 13px; display: block; margin-bottom: 6px;">HTTP Scraper Timeout (Seconds)</label>
-              <input type="number" id="setting-scrape-timeout" value="12" min="5" max="30" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1);" />
+              <input type="number" id="setting-scrape-timeout" value="12" min="5" max="30" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0, 37, 102, 0.4); color: #fff; border: 1px solid var(--border-light);" />
             </div>
             <div class="form-group" style="margin-bottom: 16px;">
               <label style="color: var(--text-muted); font-size: 13px; display: block; margin-bottom: 6px;">Structured Schema Extraction</label>
-              <select style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1);">
+              <select style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0, 37, 102, 0.4); color: #fff; border: 1px solid var(--border-light);">
                 <option selected>JSON-LD Schema + OpenGraph Meta Tags (Enabled)</option>
               </select>
             </div>
@@ -351,7 +351,7 @@
             </p>
             <div style="display: flex; gap: 12px;">
               <button id="btn-save-settings" class="btn-primary">💾 Save Preferences</button>
-              <button id="btn-clear-history-db" class="btn-glow" style="border-color: rgba(239,68,68,0.4); color: #ef4444;">🗑️ Clear Local History</button>
+              <button id="btn-clear-history-db" class="btn-glow" style="border-color: var(--palette-coral); color: var(--palette-coral);">🗑️ Clear Local History</button>
             </div>
           </div>
         </div>

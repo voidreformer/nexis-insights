@@ -1,46 +1,46 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
-/* OPEN DESIGN SYSTEM - CUSTOM USER COLOR PALETTE (HIGH CONTRAST EDITION) */
+/* OPEN DESIGN SYSTEM - STRICT HARDCORE CUSTOM USER COLOR PALETTE */
 :root {
-  /* User Palette Hex Tokens */
+  /* Exact 5 User Palette Hex Tokens */
   --palette-olive: #496600;     /* Deep Olive Green (RGB 73, 102, 0) */
   --palette-maroon: #660E00;    /* Crimson Dark Maroon (RGB 102, 14, 0) */
   --palette-navy: #002566;      /* Deep Midnight Navy (RGB 0, 37, 102) */
   --palette-lime: #97BB3E;      /* Vibrant Lime Green (RGB 151, 187, 62) */
   --palette-coral: #E68474;     /* Warm Coral Rose (RGB 230, 132, 116) */
 
-  /* Application UI System Colors - HIGH CONTRAST */
-  --bg-darker: #020817;
-  --bg-dark: #041029;
-  --bg-card: rgba(0, 37, 102, 0.55);
-  --bg-card-hover: rgba(0, 37, 102, 0.85);
+  /* Application UI System Colors - Dark Midnight Navy Base */
+  --bg-darker: #001233;
+  --bg-dark: #001A4D;
+  --bg-card: rgba(0, 37, 102, 0.65);
+  --bg-card-hover: rgba(0, 37, 102, 0.9);
   
   /* Text Tokens for 100% Crisp Visibility */
   --text-main: #FFFFFF;         /* Pure Bright White for Headers & Primary Text */
   --text-muted: #E2E8F0;        /* High-Contrast Light Slate for Subtitles & Labels */
   --text-subtle: #94A3B8;       /* Secondary details */
 
-  /* Accents */
+  /* Accents - STRICT PALETTE MAPPING ONLY */
   --accent-primary: var(--palette-lime);            /* #97BB3E */
-  --accent-primary-hover: #A8CE46;
-  --accent-primary-glow: rgba(151, 187, 62, 0.4);
+  --accent-primary-hover: var(--palette-lime);
+  --accent-primary-glow: rgba(151, 187, 62, 0.45);
 
   --accent-secondary: var(--palette-coral);          /* #E68474 */
-  --accent-secondary-glow: rgba(230, 132, 116, 0.4);
+  --accent-secondary-glow: rgba(230, 132, 116, 0.45);
 
   --accent-olive: var(--palette-olive);              /* #496600 */
   --accent-maroon: var(--palette-maroon);            /* #660E00 */
   --accent-navy: var(--palette-navy);                /* #002566 */
 
-  /* Semantic Status Indicators */
+  /* Semantic Status Indicators - STRICT PALETTE ONLY */
   --status-positive: var(--palette-lime);            /* #97BB3E */
-  --status-neutral: #38BDF8;
+  --status-neutral: var(--palette-olive);             /* #496600 */
   --status-negative: var(--palette-coral);           /* #E68474 */
 
-  /* Borders & Shadows */
-  --border-light: rgba(151, 187, 62, 0.28);
-  --border-focus: rgba(151, 187, 62, 0.7);
-  --shadow-glass: 0 8px 32px 0 rgba(0, 10, 35, 0.7);
+  /* Borders & Shadows - STRICT PALETTE ONLY */
+  --border-light: rgba(151, 187, 62, 0.3);
+  --border-focus: var(--palette-lime);
+  --shadow-glass: 0 8px 32px 0 rgba(0, 37, 102, 0.8);
   --shadow-glow: 0 0 24px var(--accent-primary-glow);
 
   /* Radii */

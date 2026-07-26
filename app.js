@@ -49,8 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Sidebar Toggle & Responsive Drawer
   const glassSidebar = document.getElementById('glass-sidebar');
   const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
-  const sidebarDesktopToggleBtn = document.getElementById('sidebar-desktop-toggle-btn');
-  const workspaceSidebarToggleBtn = document.getElementById('workspace-sidebar-toggle-btn');
+  const mobileSidebarToggleBtn = document.getElementById('mobile-sidebar-toggle-btn');
   const sidebarCloseBtn = document.getElementById('sidebar-close-btn');
   const sidebarOverlay = document.getElementById('sidebar-overlay');
 
@@ -69,8 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (sidebarToggleBtn) sidebarToggleBtn.addEventListener('click', toggleSidebar);
-  if (sidebarDesktopToggleBtn) sidebarDesktopToggleBtn.addEventListener('click', toggleSidebar);
-  if (workspaceSidebarToggleBtn) workspaceSidebarToggleBtn.addEventListener('click', toggleSidebar);
+  if (mobileSidebarToggleBtn) mobileSidebarToggleBtn.addEventListener('click', toggleSidebar);
   if (sidebarCloseBtn) sidebarCloseBtn.addEventListener('click', closeMobileSidebar);
   if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeMobileSidebar);
 

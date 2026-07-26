@@ -55,12 +55,12 @@
         </button>
         <span class="mobile-brand-title"><span class="text-accent">Nexis</span> Insights</span>
       </div>
-      <!-- DASHBOARD VIEW -->
+      <!-- DASHBOARD / HOME VIEW -->
       <div id="view-dashboard-container">
         <header class="workspace-header">
           <div class="header-title">
             <h1 class="page-title">Product Feedback Analyzer</h1>
-            <p class="page-subtitle">Extract sentiment, key pain points, and feature requests from raw customer reviews.</p>
+            <p class="page-subtitle">Real-Time AI Product Sentiment Analysis, Pain Point Extraction & Price Intelligence Engine.</p>
           </div>
           <div class="header-actions">
             <div class="status-indicator">
@@ -70,7 +70,71 @@
           </div>
         </header>
 
-        <div class="dashboard-grid">
+        <!-- 🔮 AI INTRODUCTION & HOW IT WORKS BANNER -->
+        <section class="glass-panel hero-intro-card">
+          <div class="hero-header">
+            <div class="hero-badge">
+              <span class="hero-icon">✨</span>
+              <span>Powered by NVIDIA Nemotron 550B & WASM SQLite</span>
+            </div>
+            <h2 class="hero-title">How Nexis Insights Works for You</h2>
+            <p class="hero-desc">
+              Paste any raw customer reviews or an e-commerce product link (Amazon, Myntra, Flipkart, Croma). Our AI engine extracts genuine buyer sentiments, filters out fake promotional noise, and calculates real category price intelligence.
+            </p>
+          </div>
+
+          <!-- 3-Step Pipeline Flow -->
+          <div class="step-flow-grid">
+            <div class="step-card">
+              <div class="step-number">01</div>
+              <div class="step-content">
+                <h4>🌐 Smart Web Scraping</h4>
+                <p>Scrapes JSON-LD product price metadata, images, and live customer reviews from top retail stores.</p>
+              </div>
+            </div>
+            <div class="step-card">
+              <div class="step-number">02</div>
+              <div class="step-content">
+                <h4>🔮 Deep AI Analysis</h4>
+                <p>NVIDIA Nemotron 550B analyzes sentiment %, aggregates key pain points & feature requests.</p>
+              </div>
+            </div>
+            <div class="step-card">
+              <div class="step-number">03</div>
+              <div class="step-content">
+                <h4>📊 Price & SQLite Logging</h4>
+                <p>Compares category competitor prices, plots 6-month trends & saves report to your WASM database.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Key Benefits Grid -->
+          <div class="benefit-card-grid">
+            <div class="benefit-card">
+              <span class="benefit-icon">🛡️</span>
+              <div>
+                <h5>Zero Fake Reviews</h5>
+                <p>Filters out paid influencer fluff to give you raw, unedited buyer feedback.</p>
+              </div>
+            </div>
+            <div class="benefit-card">
+              <span class="benefit-icon">💰</span>
+              <div>
+                <h5>Anti-Price Gouging</h5>
+                <p>Identifies fake discounts and alerts you when a product is actually at its lowest historical price.</p>
+              </div>
+            </div>
+            <div class="benefit-card">
+              <span class="benefit-icon">🔒</span>
+              <div>
+                <h5>Local WASM SQLite</h5>
+                <p>Your history is saved in an embedded browser database (`sql.js`), 100% private and CSV exportable.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="dashboard-grid" style="margin-top: 24px;">
           <!-- Input section -->
           <section class="glass-panel input-section">
             <div class="panel-header">

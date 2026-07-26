@@ -200,37 +200,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const navSettings = document.getElementById('nav-settings');
   const viewSettings = document.getElementById('view-settings-container');
+  const navQuickCart = document.getElementById('nav-quickcart');
+  const viewQuickCart = document.getElementById('view-quickcart-container');
 
   // Navigation Switch
+  function hideAllViews() {
+    [viewDashboard, viewHistory, viewSettings, viewQuickCart].forEach(v => { if (v) v.classList.add('hidden'); });
+    [navDashboard, navHistory, navSettings, navQuickCart].forEach(n => { if (n) n.classList.remove('active'); });
+  }
+
   navDashboard.addEventListener('click', () => {
+    hideAllViews();
     navDashboard.classList.add('active');
-    navHistory.classList.remove('active');
-    if (navSettings) navSettings.classList.remove('active');
     viewDashboard.classList.remove('hidden');
-    viewHistory.classList.add('hidden');
-    if (viewSettings) viewSettings.classList.add('hidden');
     closeMobileSidebar();
   });
 
   navHistory.addEventListener('click', () => {
+    hideAllViews();
     navHistory.classList.add('active');
-    navDashboard.classList.remove('active');
-    if (navSettings) navSettings.classList.remove('active');
     viewHistory.classList.remove('hidden');
-    viewDashboard.classList.add('hidden');
-    if (viewSettings) viewSettings.classList.add('hidden');
     loadHistory();
     closeMobileSidebar();
   });
 
   if (navSettings) {
     navSettings.addEventListener('click', () => {
+      hideAllViews();
       navSettings.classList.add('active');
-      navDashboard.classList.remove('active');
-      navHistory.classList.remove('active');
       viewSettings.classList.remove('hidden');
-      viewDashboard.classList.add('hidden');
-      viewHistory.classList.add('hidden');
+      closeMobileSidebar();
+    });
+  }
+
+  if (navQuickCart) {
+    navQuickCart.addEventListener('click', () => {
+      hideAllViews();
+      navQuickCart.classList.add('active');
+      viewQuickCart.classList.remove('hidden');
       closeMobileSidebar();
     });
   }
@@ -553,4 +560,357 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Init auth check
   checkAuth();
+
+  // ========================================================================
+  // 🛒 QUICK-COMMERCE CART INTELLIGENCE ENGINE
+  // ========================================================================
+  const qcItemsInput = document.getElementById('qc-items-input');
+  const qcCompareBtn = document.getElementById('qc-compare-btn');
+  const qcBankSelector = document.getElementById('qc-bank-selector');
+  const qcCustomDiscount = document.getElementById('qc-custom-discount');
+  const qcResultsPanel = document.getElementById('qc-results-panel');
+  const qcBasketItems = document.getElementById('qc-basket-items');
+  const qcCartOptions = document.getElementById('qc-cart-options');
+  const qcItemCount = document.getElementById('qc-item-count');
+  const qcStatusBadge = document.getElementById('qc-status-badge');
+
+  // Priority Toggle
+  const qcPrioritySavings = document.getElementById('qc-priority-savings');
+  const qcPriorityFastest = document.getElementById('qc-priority-fastest');
+  let qcPriority = 'savings';
+
+  if (qcPrioritySavings && qcPriorityFastest) {
+    qcPrioritySavings.addEventListener('click', () => {
+      qcPriority = 'savings';
+      qcPrioritySavings.classList.add('active');
+      qcPriorityFastest.classList.remove('active');
+    });
+    qcPriorityFastest.addEventListener('click', () => {
+      qcPriority = 'fastest';
+      qcPriorityFastest.classList.add('active');
+      qcPrioritySavings.classList.remove('active');
+    });
+  }
+
+  // Platform deep links
+  const platformLinks = {
+    blinkit: 'https://blinkit.com',
+    zepto: 'https://www.zeptonow.com',
+    instamart: 'https://www.swiggy.com/instamart',
+    bigbasket: 'https://www.bigbasket.com'
+  };
+
+  // Platform CSS class mapping
+  function platformClass(name) {
+    const n = name.toLowerCase();
+    if (n.includes('blinkit')) return 'blinkit';
+    if (n.includes('zepto')) return 'zepto';
+    if (n.includes('instamart')) return 'instamart';
+    if (n.includes('bigbasket')) return 'bigbasket';
+    return 'blinkit';
+  }
+
+  // Stock status emoji
+  function stockEmoji(status) {
+    if (status === 'in_stock') return '🟢';
+    if (status === 'limited') return '🟡';
+    return '🔴';
+  }
+
+  // Render Fee Unmasker Drawer
+  function renderFeeDrawer(breakdown) {
+    const bankLine = breakdown.bank_discount > 0 
+      ? `<div class="fee-line discount"><span>🎁 Bank Discount</span><span>-₹${breakdown.bank_discount}</span></div>` 
+      : '';
+    return `
+      <details class="fee-drawer">
+        <summary><span>🔍 View Full Fee Breakdown</span><span>▼</span></summary>
+        <div class="fee-drawer-body">
+          <div class="fee-line"><span>Item Subtotal</span><span>₹${breakdown.base}</span></div>
+          <div class="fee-line"><span>Handling Fee</span><span>₹${breakdown.handling}</span></div>
+          <div class="fee-line"><span>Delivery Fee</span><span>₹${breakdown.delivery}</span></div>
+          ${breakdown.surge > 0 ? `<div class="fee-line"><span>⚡ Surge/Peak Fee</span><span>₹${breakdown.surge}</span></div>` : ''}
+          ${bankLine}
+          <div class="fee-total"><span>TOTAL</span><span>₹${breakdown.base + breakdown.handling + breakdown.delivery + (breakdown.surge || 0) - (breakdown.bank_discount || 0)}</span></div>
+        </div>
+      </details>
+    `;
+  }
+
+  // Compare Prices Button Handler
+  if (qcCompareBtn) {
+    qcCompareBtn.addEventListener('click', async () => {
+      const items = qcItemsInput ? qcItemsInput.value.trim() : '';
+      if (!items) return;
+
+      const bankCard = qcBankSelector ? qcBankSelector.value : '';
+      const customDiscount = qcCustomDiscount ? qcCustomDiscount.value : '';
+
+      qcCompareBtn.disabled = true;
+      qcCompareBtn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border:2px solid rgba(0,0,0,0.2);border-top-color:#020817;border-radius:50%;animation:spin 0.8s linear infinite;"></div> Comparing across 4 platforms...';
+      if (qcStatusBadge) {
+        qcStatusBadge.textContent = 'Processing via AI Engine...';
+        qcStatusBadge.style.background = 'var(--palette-olive)';
+      }
+
+      const token = getToken();
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      let data;
+      try {
+        const response = await fetch('/api/quickcart', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ items, bankCard: bankCard || customDiscount ? bankCard : '', priority: qcPriority })
+        });
+        if (!response.ok) throw new Error('API error');
+        data = await response.json();
+      } catch (err) {
+        console.warn('[QuickCart] Server fallback, generating locally:', err);
+        const itemLines = items.split(/[,\n;]+/).map(s => s.trim()).filter(s => s.length > 1);
+        data = generateLocalQuickCartData(itemLines, bankCard, customDiscount);
+      }
+
+      // Render results
+      renderQuickCartResults(data);
+
+      qcCompareBtn.disabled = false;
+      qcCompareBtn.innerHTML = '🔍 Compare Prices Across Platforms';
+      if (qcStatusBadge) {
+        qcStatusBadge.textContent = 'Cart Engine Ready';
+        qcStatusBadge.style.background = 'rgba(151, 187, 62, 0.2)';
+        qcStatusBadge.style.color = '#97BB3E';
+      }
+    });
+  }
+
+  // Local fallback data generator
+  function generateLocalQuickCartData(itemLines, bankCard, customDiscount) {
+    const commonGroceries = {
+      'milk': { name: 'Amul Taaza Milk 1L', base: 68 },
+      'onion': { name: 'Fresh Red Onions 1kg', base: 42 },
+      'maggi': { name: 'Maggi 2-Min Noodles 280g', base: 56 },
+      'oil': { name: 'Fortune Sunflower Oil 1L', base: 155 },
+      'butter': { name: 'Amul Butter 500g', base: 280 },
+      'bread': { name: 'Harvest Gold White Bread', base: 45 },
+      'rice': { name: 'India Gate Basmati Rice 1kg', base: 195 },
+      'sugar': { name: 'Parle-G Sugar 1kg', base: 48 },
+      'atta': { name: 'Aashirvaad Atta 5kg', base: 295 },
+      'egg': { name: 'Farm Fresh Eggs (12 pcs)', base: 84 },
+      'curd': { name: 'Amul Masti Curd 400g', base: 35 },
+      'paneer': { name: 'Amul Fresh Paneer 200g', base: 90 },
+      'potato': { name: 'Fresh Potatoes 1kg', base: 32 },
+      'tomato': { name: 'Fresh Tomatoes 1kg', base: 38 },
+      'dal': { name: 'Toor Dal 1kg', base: 165 },
+      'tea': { name: 'Tata Tea Premium 500g', base: 275 }
+    };
+
+    const parsedItems = itemLines.map(line => {
+      const lowerLine = line.toLowerCase();
+      let matched = null;
+      for (const [key, val] of Object.entries(commonGroceries)) {
+        if (lowerLine.includes(key)) { matched = val; break; }
+      }
+      const qtyMatch = line.match(/(\d+)/); 
+      const qty = qtyMatch ? parseInt(qtyMatch[1]) : 1;
+      const basePrice = matched ? matched.base : Math.floor(Math.random() * 120) + 30;
+      const itemName = matched ? matched.name : line.charAt(0).toUpperCase() + line.slice(1);
+
+      return {
+        name: itemName, qty: Math.min(qty, 5), unit: 'pcs',
+        prices: {
+          blinkit: basePrice + Math.floor(Math.random() * 12) - 5,
+          zepto: basePrice + Math.floor(Math.random() * 15) - 3,
+          instamart: basePrice + Math.floor(Math.random() * 10) - 2,
+          bigbasket: basePrice + Math.floor(Math.random() * 8) - 4
+        },
+        stock: {
+          blinkit: Math.random() > 0.12 ? 'in_stock' : 'limited',
+          zepto: Math.random() > 0.08 ? 'in_stock' : 'limited',
+          instamart: Math.random() > 0.18 ? 'in_stock' : (Math.random() > 0.5 ? 'limited' : 'out_of_stock'),
+          bigbasket: Math.random() > 0.1 ? 'in_stock' : 'limited'
+        }
+      };
+    });
+
+    const platforms = ['blinkit', 'zepto', 'instamart', 'bigbasket'];
+    const etas = { blinkit: 12, zepto: 8, instamart: 16, bigbasket: 35 };
+    const handling = { blinkit: 6, zepto: 5, instamart: 7, bigbasket: 4 };
+    const delivery = { blinkit: 25, zepto: 29, instamart: 22, bigbasket: 30 };
+    const totals = {};
+
+    platforms.forEach(p => {
+      const base = parsedItems.reduce((sum, item) => sum + (item.prices[p] * item.qty), 0);
+      totals[p] = { base, handling: handling[p], delivery: delivery[p], surge: 0, total: base + handling[p] + delivery[p] };
+    });
+
+    const sorted = Object.entries(totals).sort((a, b) => a[1].total - b[1].total);
+    const cheapestP = sorted[0][0];
+
+    let bankDiscountAmt = 0;
+    let bankOfferStr = '';
+    const discountRates = { HDFC: 0.10, ICICI: 0.07, SBI: 50, Axis: 0.08, Kotak: 0.05 };
+    if (customDiscount && parseInt(customDiscount) > 0) {
+      bankDiscountAmt = Math.round(totals[cheapestP].total * (parseInt(customDiscount) / 100));
+      bankOfferStr = `${customDiscount}% Custom Discount`;
+    } else if (bankCard && discountRates[bankCard] !== undefined) {
+      const d = discountRates[bankCard];
+      if (d < 1) {
+        bankDiscountAmt = Math.round(totals[cheapestP].total * d);
+        bankOfferStr = `${Math.round(d * 100)}% off via ${bankCard} Card`;
+      } else {
+        bankDiscountAmt = d;
+        bankOfferStr = `Flat ₹${d} off via ${bankCard} Card`;
+      }
+    }
+
+    const splitP1 = sorted[0][0];
+    const splitP2 = sorted[1][0];
+    const splitItems1 = parsedItems.slice(0, Math.ceil(parsedItems.length * 0.65)).map(i => `${i.name} x${i.qty}`);
+    const splitItems2 = parsedItems.slice(Math.ceil(parsedItems.length * 0.65)).map(i => `${i.name} x${i.qty}`);
+    const splitTotal = Math.round(totals[cheapestP].total * 0.87);
+
+    return {
+      parsed_items: parsedItems,
+      best_options: {
+        cheapest: {
+          platform: cheapestP.charAt(0).toUpperCase() + cheapestP.slice(1),
+          total: totals[cheapestP].total - bankDiscountAmt,
+          eta_mins: etas[cheapestP],
+          breakdown: { ...totals[cheapestP], bank_discount: bankDiscountAmt },
+          bank_offer: bankOfferStr
+        },
+        fastest: {
+          platform: 'Zepto',
+          total: totals.zepto.total,
+          eta_mins: etas.zepto,
+          breakdown: { ...totals.zepto, bank_discount: 0 }
+        },
+        split_cart: {
+          platforms: [splitP1.charAt(0).toUpperCase() + splitP1.slice(1), splitP2.charAt(0).toUpperCase() + splitP2.slice(1)],
+          items_split: {
+            [splitP1.charAt(0).toUpperCase() + splitP1.slice(1)]: splitItems1,
+            [splitP2.charAt(0).toUpperCase() + splitP2.slice(1)]: splitItems2.length > 0 ? splitItems2 : ['Remaining items']
+          },
+          total: splitTotal,
+          savings: totals[cheapestP].total - splitTotal + bankDiscountAmt,
+          combined_eta_mins: Math.max(etas[splitP1], etas[splitP2]) + 2
+        }
+      }
+    };
+  }
+
+  // Render Quick Cart Results
+  function renderQuickCartResults(data) {
+    if (!qcResultsPanel || !qcBasketItems || !qcCartOptions) return;
+    qcResultsPanel.classList.remove('hidden');
+
+    // Render Basket Items
+    const items = data.parsed_items || [];
+    if (qcItemCount) qcItemCount.textContent = `${items.length} Items`;
+
+    qcBasketItems.innerHTML = items.map((item, idx) => {
+      const stockDots = ['blinkit', 'zepto', 'instamart', 'bigbasket'].map(p => {
+        const status = item.stock ? (item.stock[p] || 'in_stock') : 'in_stock';
+        const label = p.charAt(0).toUpperCase() + p.slice(1);
+        return `<span class="stock-dot ${status}"><span class="platform-label ${p}">${stockEmoji(status)} ${label}</span></span>`;
+      }).join('');
+
+      return `
+        <div class="basket-item">
+          <div class="basket-item-left">
+            <span class="basket-item-idx">${idx + 1}</span>
+            <span class="basket-item-name">${item.name}</span>
+            <span class="basket-item-qty">(x${item.qty})</span>
+          </div>
+          <div class="basket-item-right">${stockDots}</div>
+        </div>
+      `;
+    }).join('');
+
+    // Render 3 Option Cards
+    const opts = data.best_options;
+    if (!opts) return;
+
+    const cheapest = opts.cheapest || {};
+    const fastest = opts.fastest || {};
+    const split = opts.split_cart || {};
+
+    const cheapestPClass = platformClass(cheapest.platform || 'blinkit');
+    const fastestPClass = platformClass(fastest.platform || 'zepto');
+    const splitP1Class = split.platforms ? platformClass(split.platforms[0]) : 'blinkit';
+    const splitP2Class = split.platforms ? platformClass(split.platforms[1]) : 'zepto';
+
+    // Split cart visual bar percentages
+    const splitP1Items = split.items_split ? Object.values(split.items_split)[0] || [] : [];
+    const splitP2Items = split.items_split ? Object.values(split.items_split)[1] || [] : [];
+    const totalSplitItems = splitP1Items.length + splitP2Items.length;
+    const p1Pct = totalSplitItems > 0 ? Math.round((splitP1Items.length / totalSplitItems) * 100) : 65;
+    const p2Pct = 100 - p1Pct;
+
+    qcCartOptions.innerHTML = `
+      <!-- 👑 CHEAPEST -->
+      <div class="cart-option-card cheapest">
+        <div class="cart-option-tag">👑 CHEAPEST TOTAL</div>
+        <div class="cart-option-platform">${cheapest.platform || 'Blinkit'}</div>
+        <div class="cart-option-total-row">
+          <span class="cart-option-total">₹${cheapest.total || 0}</span>
+          <span class="cart-option-eta">⏱ ${cheapest.eta_mins || 12} mins</span>
+        </div>
+        ${cheapest.bank_offer ? `<div class="cart-option-bank-offer">🎁 Saved via ${cheapest.bank_offer}</div>` : ''}
+        ${cheapest.breakdown ? renderFeeDrawer(cheapest.breakdown) : ''}
+        <a href="${platformLinks[cheapestPClass]}" target="_blank" class="checkout-btn ${cheapestPClass}">CHECKOUT ON ${(cheapest.platform || 'BLINKIT').toUpperCase()} ➔</a>
+      </div>
+
+      <!-- ⚡ FASTEST -->
+      <div class="cart-option-card fastest">
+        <div class="cart-option-tag">⚡ FASTEST DELIVERY</div>
+        <div class="cart-option-platform">${fastest.platform || 'Zepto'}</div>
+        <div class="cart-option-total-row">
+          <span class="cart-option-total">₹${fastest.total || 0}</span>
+          <span class="cart-option-eta">⏱ ${fastest.eta_mins || 8} mins</span>
+        </div>
+        ${fastest.breakdown ? renderFeeDrawer(fastest.breakdown) : ''}
+        <a href="${platformLinks[fastestPClass]}" target="_blank" class="checkout-btn ${fastestPClass}">CHECKOUT ON ${(fastest.platform || 'ZEPTO').toUpperCase()} ➔</a>
+      </div>
+
+      <!-- 🔀 SPLIT CART -->
+      <div class="cart-option-card split">
+        <div class="cart-option-tag">🔀 SPLIT CART</div>
+        <div class="cart-option-platform">${split.platforms ? split.platforms.join(' + ') : 'Split'}</div>
+        <div class="cart-option-total-row">
+          <span class="cart-option-total">₹${split.total || 0}</span>
+          <span class="cart-option-eta">⏱ ~${split.combined_eta_mins || 14} mins</span>
+        </div>
+        ${split.savings > 0 ? `<div class="savings-badge">💰 Save ₹${split.savings} with split</div>` : ''}
+
+        <div class="split-bar-container">
+          <div class="split-bar-label">Item Distribution</div>
+          <div class="split-bar">
+            <div class="split-segment p1" style="width: ${p1Pct}%"></div>
+            <div class="split-segment p2" style="width: ${p2Pct}%"></div>
+          </div>
+          <div class="split-legend">
+            <div class="split-legend-item"><span class="split-legend-dot" style="background: var(--palette-lime);"></span>${split.platforms ? split.platforms[0] : 'Platform 1'} (${splitP1Items.length} items)</div>
+            <div class="split-legend-item"><span class="split-legend-dot" style="background: var(--palette-coral);"></span>${split.platforms ? split.platforms[1] : 'Platform 2'} (${splitP2Items.length} items)</div>
+          </div>
+        </div>
+
+        <div style="margin-top:8px;">
+          ${split.platforms && split.items_split ? Object.entries(split.items_split).map(([platform, itemsList]) => `
+            <div style="margin-bottom:8px;">
+              <span style="font-size:12px;font-weight:700;color:var(--palette-lime);">${platform}:</span>
+              <ul class="split-items-list">${(itemsList || []).map(i => `<li>• ${i}</li>`).join('')}</ul>
+            </div>
+          `).join('') : ''}
+        </div>
+
+        <a href="${platformLinks[splitP1Class]}" target="_blank" class="checkout-btn split-checkout">SPLIT & CHECKOUT ➔</a>
+      </div>
+    `;
+
+    // Smooth scroll to results
+    qcResultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 });

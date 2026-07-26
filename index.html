@@ -34,6 +34,7 @@
       <nav class="nav-links">
         <button class="nav-item active" id="nav-dashboard"><span class="icon">📈</span> <span class="nav-label">Dashboard</span></button>
         <button class="nav-item" id="nav-history"><span class="icon">📑</span> <span class="nav-label">Analysis History</span></button>
+        <button class="nav-item" id="nav-quickcart"><span class="icon">🛒</span> <span class="nav-label">Quick Cart</span></button>
         <button class="nav-item" id="nav-settings"><span class="icon">⚙️</span> <span class="nav-label">Settings</span></button>
       </nav>
       <div class="sidebar-footer">
@@ -288,6 +289,82 @@
         <div class="glass-panel">
           <div id="history-items-container" style="display: flex; flex-direction: column; gap: 16px;">
             <!-- JS Injected History Timeline Cards -->
+          </div>
+        </div>
+      </div>
+
+      <!-- QUICK CART VIEW (Hidden by default) -->
+      <div id="view-quickcart-container" class="hidden">
+        <header class="workspace-header quickcart-header">
+          <div class="header-title">
+            <h1 class="page-title">🛒 Unified Quick-Commerce Cart</h1>
+            <p class="page-subtitle">Compare prices across Blinkit, Zepto, Instamart & BigBasket — find the cheapest, fastest, or split-cart option.</p>
+          </div>
+          <div class="header-actions">
+            <div class="status-indicator">
+              <span class="pulse-dot"></span>
+              <span class="status-badge" id="qc-status-badge">Cart Engine Ready</span>
+            </div>
+          </div>
+        </header>
+
+        <!-- Quick Cart Input Section -->
+        <section class="glass-panel">
+          <div class="panel-header">
+            <h3>📝 Your Grocery List</h3>
+            <span class="badge">Bulk Paste Mode</span>
+          </div>
+          <div class="quickcart-input-section">
+            <div>
+              <textarea id="qc-items-input" class="quickcart-textarea" rows="8" placeholder="Paste your grocery list here...&#10;&#10;Example:&#10;2L Amul Taaza Milk&#10;1kg Red Onions&#10;Maggi 2-Min Noodles 280g&#10;Fortune Sunflower Oil 1L&#10;500g Amul Butter&#10;Bread (any brand)"></textarea>
+            </div>
+            <div class="quickcart-controls">
+              <div class="control-group">
+                <label>🏦 Bank Card (for offers)</label>
+                <select id="qc-bank-selector" class="bank-selector">
+                  <option value="">No Bank Card</option>
+                  <option value="HDFC">HDFC — ~10% off</option>
+                  <option value="ICICI">ICICI — ~7% off</option>
+                  <option value="SBI">SBI — Flat ₹50 off</option>
+                  <option value="Axis">Axis — ~8% off</option>
+                  <option value="Kotak">Kotak — ~5% off</option>
+                </select>
+              </div>
+              <div class="control-group">
+                <label>💡 Custom Discount %</label>
+                <input type="number" id="qc-custom-discount" class="custom-discount-input" placeholder="e.g. 12" min="0" max="50" />
+              </div>
+              <div class="control-group">
+                <label>🎯 Priority</label>
+                <div class="priority-toggle">
+                  <button class="priority-pill active" id="qc-priority-savings" data-priority="savings">👑 Max Savings</button>
+                  <button class="priority-pill" id="qc-priority-fastest" data-priority="fastest">⚡ Fastest</button>
+                </div>
+              </div>
+              <button id="qc-compare-btn" class="quickcart-compare-btn">🔍 Compare Prices Across Platforms</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Quick Cart Results (Hidden until comparison) -->
+        <div id="qc-results-panel" class="quickcart-results hidden">
+
+          <!-- Parsed Basket Items -->
+          <div class="basket-section">
+            <div class="basket-section-title">
+              🧺 YOUR UNIFIED BASKET <span class="basket-item-count" id="qc-item-count">0 Items</span>
+            </div>
+            <div class="basket-items-grid" id="qc-basket-items">
+              <!-- JS Injected -->
+            </div>
+          </div>
+
+          <!-- Best Real-Time Cart Options -->
+          <div class="basket-section">
+            <div class="basket-section-title">📊 BEST REAL-TIME CART OPTIONS</div>
+            <div class="cart-options-grid" id="qc-cart-options">
+              <!-- JS Injected: 3 cards (Cheapest, Fastest, Split) -->
+            </div>
           </div>
         </div>
       </div>

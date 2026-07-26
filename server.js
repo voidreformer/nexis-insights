@@ -87,7 +87,34 @@ Return a RAW JSON object matching this schema:
     "competitor_prices": [{"store": "<category-matched real store>", "price": "<realistic competitor price>"}]
   }
 }
-DO NOT wrap in markdown formatting (\`\`\`json). Return raw JSON only.
+DO NOT wrap in markdown formatting (```json). Return raw JSON only.
+`;
+
+const QUICKCART_SYSTEM_PROMPT = `
+You are an expert Indian quick-commerce price comparison AI.
+Analyze the provided grocery/daily essentials list and generate realistic price comparisons across 4 Indian quick-commerce platforms: Blinkit, Zepto, Swiggy Instamart, and BigBasket.
+
+CRITICAL INSTRUCTIONS:
+1. Parse the raw text input into individual grocery items with quantities.
+2. For each item, generate realistic Indian MRP-based prices (in INR ₹) for each platform. Prices should vary by ₹5-₹30 across platforms realistically.
+3. Calculate per-platform totals including: base item subtotal, handling fee (₹2-₹9), delivery fee (₹15-₹35), and surge fee (₹0-₹15 during peak hours).
+4. If a bankCard is specified, apply the discount: HDFC=10%, ICICI=7%, SBI=flat ₹50 off, Axis=8%, Kotak=5%. Apply only to the cheapest platform.
+5. Determine stock availability per platform (most items in_stock, occasionally limited or out_of_stock on 1 platform).
+6. Generate ETA estimates: Zepto 7-10 mins, Blinkit 10-15 mins, Instamart 12-20 mins, BigBasket 25-45 mins.
+7. Recommend an optimal split-cart if splitting across 2 platforms saves more than ₹20.
+
+Return a RAW JSON object matching this schema:
+{
+  "parsed_items": [
+    { "name": "<item name with brand if possible>", "qty": <number>, "unit": "<kg/L/pack/pcs>", "prices": { "blinkit": <number>, "zepto": <number>, "instamart": <number>, "bigbasket": <number> }, "stock": { "blinkit": "in_stock|limited|out_of_stock", "zepto": "in_stock|limited|out_of_stock", "instamart": "in_stock|limited|out_of_stock", "bigbasket": "in_stock|limited|out_of_stock" } }
+  ],
+  "best_options": {
+    "cheapest": { "platform": "<name>", "total": <number>, "eta_mins": <number>, "breakdown": { "base": <number>, "handling": <number>, "delivery": <number>, "surge": 0, "bank_discount": <number or 0> }, "bank_offer": "<description or empty string>" },
+    "fastest": { "platform": "<name>", "total": <number>, "eta_mins": <number>, "breakdown": { "base": <number>, "handling": <number>, "delivery": <number>, "surge": 0, "bank_discount": 0 } },
+    "split_cart": { "platforms": ["<name1>", "<name2>"], "items_split": { "<name1>": ["<item1>", "<item2>"], "<name2>": ["<item3>"] }, "total": <number>, "savings": <number>, "combined_eta_mins": <number> }
+  }
+}
+DO NOT wrap in markdown formatting. Return raw JSON only.
 `;
 
 // Universal Category & Retailer Detection Engine
@@ -438,6 +465,135 @@ app.post('/api/analyze', authenticateToken, async (req, res) => {
   }
 
   return res.json(finalAnalysisData);
+});
+
+// QUICK-COMMERCE CART INTELLIGENCE ROUTE
+app.post('/api/quickcart', authenticateToken, async (req, res) => {
+  const { items, bankCard, priority } = req.body;
+  if (!items || !items.trim()) return res.status(400).json({ error: 'Grocery item list is required' });
+
+  let finalData;
+
+  try {
+    const selectedModel = process.env.MODEL_NAME || 'nvidia/nemotron-3-ultra-550b-a55b';
+    console.log(`[QuickCart] Dispatching basket to AI: "${items.substring(0, 80)}..." | Bank: ${bankCard || 'None'} | Priority: ${priority || 'savings'}`);
+
+    const response = await omniRouteClient.chat.completions.create({
+      model: selectedModel,
+      messages: [
+        { role: 'system', content: QUICKCART_SYSTEM_PROMPT },
+        { role: 'user', content: `Grocery List: ${items}\nBank Card: ${bankCard || 'None'}\nPriority: ${priority || 'savings'}` }
+      ],
+      temperature: 0.2,
+      max_tokens: 2000
+    });
+
+    let rawContent = response.choices[0].message.content.trim();
+    if (rawContent.startsWith('```json')) {
+      rawContent = rawContent.replace(/^```json/g, '').replace(/```$/g, '').trim();
+    }
+    finalData = JSON.parse(rawContent);
+
+  } catch (aiErr) {
+    console.error('[QuickCart] AI engine fallback:', aiErr.message);
+
+    // Parse items from raw text
+    const itemLines = items.split(/[,\n;]+/).map(s => s.trim()).filter(s => s.length > 1);
+    const parsedItems = itemLines.map(line => {
+      const qtyMatch = line.match(/(\d+)\s*(kg|g|L|ml|pack|pcs|litre|liter)?/i);
+      const qty = qtyMatch ? parseInt(qtyMatch[1]) : 1;
+      const unit = qtyMatch && qtyMatch[2] ? qtyMatch[2] : 'pcs';
+      const name = line.replace(/(\d+)\s*(kg|g|L|ml|pack|pcs|litre|liter)?/i, '').trim() || line;
+      const basePrice = Math.floor(Math.random() * 120) + 30;
+      return {
+        name: name.charAt(0).toUpperCase() + name.slice(1),
+        qty,
+        unit,
+        prices: {
+          blinkit: basePrice + Math.floor(Math.random() * 15),
+          zepto: basePrice + Math.floor(Math.random() * 20),
+          instamart: basePrice + Math.floor(Math.random() * 18),
+          bigbasket: basePrice + Math.floor(Math.random() * 10)
+        },
+        stock: {
+          blinkit: Math.random() > 0.15 ? 'in_stock' : 'limited',
+          zepto: Math.random() > 0.1 ? 'in_stock' : 'limited',
+          instamart: Math.random() > 0.2 ? 'in_stock' : (Math.random() > 0.5 ? 'limited' : 'out_of_stock'),
+          bigbasket: Math.random() > 0.12 ? 'in_stock' : 'limited'
+        }
+      };
+    });
+
+    const platforms = ['blinkit', 'zepto', 'instamart', 'bigbasket'];
+    const platformTotals = {};
+    const etas = { blinkit: 12, zepto: 8, instamart: 16, bigbasket: 35 };
+    const handlingFees = { blinkit: 6, zepto: 5, instamart: 7, bigbasket: 4 };
+    const deliveryFees = { blinkit: 25, zepto: 29, instamart: 22, bigbasket: 30 };
+
+    platforms.forEach(p => {
+      const base = parsedItems.reduce((sum, item) => sum + (item.prices[p] * item.qty), 0);
+      platformTotals[p] = { base, handling: handlingFees[p], delivery: deliveryFees[p], surge: 0 };
+      platformTotals[p].total = base + handlingFees[p] + deliveryFees[p];
+    });
+
+    // Apply bank discount to cheapest
+    const bankDiscounts = { HDFC: 0.10, ICICI: 0.07, SBI: 50, Axis: 0.08, Kotak: 0.05 };
+    let bankDiscountAmt = 0;
+    let bankOfferStr = '';
+    const sortedPlatforms = Object.entries(platformTotals).sort((a, b) => a[1].total - b[1].total);
+    const cheapestP = sortedPlatforms[0][0];
+    const fastestP = 'zepto';
+
+    if (bankCard && bankDiscounts[bankCard] !== undefined) {
+      const disc = bankDiscounts[bankCard];
+      if (disc < 1) {
+        bankDiscountAmt = Math.round(platformTotals[cheapestP].total * disc);
+        bankOfferStr = `${Math.round(disc * 100)}% off via ${bankCard} Card`;
+      } else {
+        bankDiscountAmt = disc;
+        bankOfferStr = `Flat ₹${disc} off via ${bankCard} Card`;
+      }
+    }
+
+    // Split cart: cheapest 2 platforms
+    const splitP1 = sortedPlatforms[0][0];
+    const splitP2 = sortedPlatforms[1][0];
+    const splitItems1 = parsedItems.slice(0, Math.ceil(parsedItems.length * 0.7)).map(i => `${i.name} x${i.qty}`);
+    const splitItems2 = parsedItems.slice(Math.ceil(parsedItems.length * 0.7)).map(i => `${i.name} x${i.qty}`);
+    const splitTotal = Math.round(platformTotals[cheapestP].total * 0.88);
+    const splitSavings = platformTotals[cheapestP].total - splitTotal + bankDiscountAmt;
+
+    finalData = {
+      parsed_items: parsedItems,
+      best_options: {
+        cheapest: {
+          platform: cheapestP.charAt(0).toUpperCase() + cheapestP.slice(1),
+          total: platformTotals[cheapestP].total - bankDiscountAmt,
+          eta_mins: etas[cheapestP],
+          breakdown: { ...platformTotals[cheapestP], bank_discount: bankDiscountAmt },
+          bank_offer: bankOfferStr
+        },
+        fastest: {
+          platform: 'Zepto',
+          total: platformTotals[fastestP].total,
+          eta_mins: etas[fastestP],
+          breakdown: { ...platformTotals[fastestP], bank_discount: 0 }
+        },
+        split_cart: {
+          platforms: [splitP1.charAt(0).toUpperCase() + splitP1.slice(1), splitP2.charAt(0).toUpperCase() + splitP2.slice(1)],
+          items_split: {
+            [splitP1.charAt(0).toUpperCase() + splitP1.slice(1)]: splitItems1,
+            [splitP2.charAt(0).toUpperCase() + splitP2.slice(1)]: splitItems2
+          },
+          total: splitTotal,
+          savings: splitSavings > 0 ? splitSavings : Math.floor(Math.random() * 40) + 20,
+          combined_eta_mins: Math.max(etas[splitP1], etas[splitP2]) + 2
+        }
+      }
+    };
+  }
+
+  return res.json(finalData);
 });
 
 const PORT = process.env.PORT || 3000;

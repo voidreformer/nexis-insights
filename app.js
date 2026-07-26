@@ -213,6 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
     hideAllViews();
     navDashboard.classList.add('active');
     viewDashboard.classList.remove('hidden');
+    viewDashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
     closeMobileSidebar();
   });
 
@@ -220,6 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
     hideAllViews();
     navHistory.classList.add('active');
     viewHistory.classList.remove('hidden');
+    viewHistory.scrollIntoView({ behavior: 'smooth', block: 'start' });
     loadHistory();
     closeMobileSidebar();
   });
@@ -229,6 +231,7 @@ document.addEventListener('DOMContentLoaded', () => {
       hideAllViews();
       navSettings.classList.add('active');
       viewSettings.classList.remove('hidden');
+      viewSettings.scrollIntoView({ behavior: 'smooth', block: 'start' });
       closeMobileSidebar();
     });
   }
@@ -238,6 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
       hideAllViews();
       navQuickCart.classList.add('active');
       viewQuickCart.classList.remove('hidden');
+      viewQuickCart.scrollIntoView({ behavior: 'smooth', block: 'start' });
       closeMobileSidebar();
     });
   }

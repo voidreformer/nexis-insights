@@ -326,6 +326,7 @@ body::after {
   flex: 1;
   padding: 40px;
   overflow-y: auto;
+  scroll-behavior: smooth;
   display: flex;
   flex-direction: column;
   gap: 32px;

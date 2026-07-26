@@ -15,19 +15,25 @@
   <link rel="stylesheet" href="figma-sds/ui/primitives/Tag/tag.css">
 </head>
 <body>
-  <div class="app-container">
+  <div class="app-container" id="app-container">
+    <!-- Sidebar Overlay Backdrop for Mobile -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
     <!-- Sidebar Navigation -->
-    <aside class="glass-sidebar">
+    <aside class="glass-sidebar" id="glass-sidebar">
       <div class="brand">
-        <div class="brand-icon">
-          <span class="logo-icon" style="font-size: 24px;">🔮</span>
+        <div class="brand-left">
+          <div class="brand-icon">
+            <span class="logo-icon" style="font-size: 24px;">🔮</span>
+          </div>
+          <span class="brand-text"><span class="text-accent">Nexis</span> Insights</span>
         </div>
-        <span class="brand-text"><span class="text-accent">Nexis</span> Insights</span>
+        <button class="sidebar-close-btn" id="sidebar-close-btn" aria-label="Close Sidebar">✕</button>
       </div>
       <nav class="nav-links">
-        <button class="nav-item active" id="nav-dashboard"><span class="icon">📈</span> Dashboard</button>
-        <button class="nav-item" id="nav-history"><span class="icon">📑</span> Analysis History</button>
-        <button class="nav-item" id="nav-settings"><span class="icon">⚙️</span> Settings</button>
+        <button class="nav-item active" id="nav-dashboard"><span class="icon">📈</span> <span class="nav-label">Dashboard</span></button>
+        <button class="nav-item" id="nav-history"><span class="icon">📑</span> <span class="nav-label">Analysis History</span></button>
+        <button class="nav-item" id="nav-settings"><span class="icon">⚙️</span> <span class="nav-label">Settings</span></button>
       </nav>
       <div class="sidebar-footer">
         <div class="user-profile" id="user-profile-btn">
@@ -42,6 +48,13 @@
 
     <!-- Main Workspace -->
     <main class="workspace">
+      <!-- Top Mobile Navigation Bar with Sidebar Hamburger Button -->
+      <div class="mobile-top-bar">
+        <button class="sidebar-toggle-btn" id="sidebar-toggle-btn" aria-label="Toggle Sidebar">
+          <span class="hamburger-icon">☰</span>
+        </button>
+        <span class="mobile-brand-title"><span class="text-accent">Nexis</span> Insights</span>
+      </div>
       <!-- DASHBOARD VIEW -->
       <div id="view-dashboard-container">
         <header class="workspace-header">

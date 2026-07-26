@@ -46,6 +46,30 @@ document.addEventListener('DOMContentLoaded', () => {
   const viewHistory = document.getElementById('view-history-container');
   const historyItemsContainer = document.getElementById('history-items-container');
 
+  // Sidebar Toggle & Responsive Drawer
+  const glassSidebar = document.getElementById('glass-sidebar');
+  const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+  const sidebarCloseBtn = document.getElementById('sidebar-close-btn');
+  const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+  function toggleSidebar() {
+    if (window.innerWidth < 840) {
+      glassSidebar.classList.toggle('mobile-open');
+      sidebarOverlay.classList.toggle('active');
+    } else {
+      glassSidebar.classList.toggle('collapsed');
+    }
+  }
+
+  function closeMobileSidebar() {
+    if (glassSidebar) glassSidebar.classList.remove('mobile-open');
+    if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+  }
+
+  if (sidebarToggleBtn) sidebarToggleBtn.addEventListener('click', toggleSidebar);
+  if (sidebarCloseBtn) sidebarCloseBtn.addEventListener('click', closeMobileSidebar);
+  if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeMobileSidebar);
+
   function getToken() {
     return localStorage.getItem('nexis_auth_token');
   }
@@ -183,6 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
     viewDashboard.classList.remove('hidden');
     viewHistory.classList.add('hidden');
     if (viewSettings) viewSettings.classList.add('hidden');
+    closeMobileSidebar();
   });
 
   navHistory.addEventListener('click', () => {
@@ -193,6 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
     viewDashboard.classList.add('hidden');
     if (viewSettings) viewSettings.classList.add('hidden');
     loadHistory();
+    closeMobileSidebar();
   });
 
   if (navSettings) {
@@ -203,6 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
       viewSettings.classList.remove('hidden');
       viewDashboard.classList.add('hidden');
       viewHistory.classList.add('hidden');
+      closeMobileSidebar();
     });
   }
 

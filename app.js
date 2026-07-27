@@ -590,12 +590,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Platform deep links
+  const qcRegionSelector = document.getElementById('qc-region-selector');
+
+  // Platform deep links (Global & Indian)
   const platformLinks = {
     blinkit: 'https://blinkit.com',
     zepto: 'https://www.zeptonow.com',
     instamart: 'https://www.swiggy.com/instamart',
-    bigbasket: 'https://www.bigbasket.com'
+    bigbasket: 'https://www.bigbasket.com',
+    instacart: 'https://www.instacart.com',
+    amazonfresh: 'https://www.amazon.com/fresh',
+    dashmart: 'https://www.doordash.com',
+    gopuff: 'https://gopuff.com',
+    getir: 'https://getir.com',
+    ubereats: 'https://www.ubereats.com/category/grocery'
   };
 
   // Platform CSS class mapping
@@ -605,6 +613,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (n.includes('zepto')) return 'zepto';
     if (n.includes('instamart')) return 'instamart';
     if (n.includes('bigbasket')) return 'bigbasket';
+    if (n.includes('instacart')) return 'blinkit';
+    if (n.includes('amazon')) return 'instamart';
+    if (n.includes('dashmart') || n.includes('gopuff')) return 'zepto';
+    if (n.includes('getir') || n.includes('ubereats')) return 'bigbasket';
     return 'blinkit';
   }
 
@@ -616,20 +628,21 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Render Fee Unmasker Drawer
-  function renderFeeDrawer(breakdown) {
+  function renderFeeDrawer(breakdown, sym = '₹') {
     const bankLine = breakdown.bank_discount > 0 
-      ? `<div class="fee-line discount"><span>🎁 Bank Discount</span><span>-₹${breakdown.bank_discount}</span></div>` 
+      ? `<div class="fee-line discount"><span>🎁 Bank Discount</span><span>-${sym}${breakdown.bank_discount}</span></div>` 
       : '';
+    const totalVal = breakdown.base + breakdown.handling + breakdown.delivery + (breakdown.surge || 0) - (breakdown.bank_discount || 0);
     return `
       <details class="fee-drawer">
         <summary><span>🔍 View Full Fee Breakdown</span><span>▼</span></summary>
         <div class="fee-drawer-body">
-          <div class="fee-line"><span>Item Subtotal</span><span>₹${breakdown.base}</span></div>
-          <div class="fee-line"><span>Handling Fee</span><span>₹${breakdown.handling}</span></div>
-          <div class="fee-line"><span>Delivery Fee</span><span>₹${breakdown.delivery}</span></div>
-          ${breakdown.surge > 0 ? `<div class="fee-line"><span>⚡ Surge/Peak Fee</span><span>₹${breakdown.surge}</span></div>` : ''}
+          <div class="fee-line"><span>Item Subtotal</span><span>${sym}${breakdown.base}</span></div>
+          <div class="fee-line"><span>Service/Handling Fee</span><span>${sym}${breakdown.handling}</span></div>
+          <div class="fee-line"><span>Delivery Fee</span><span>${sym}${breakdown.delivery}</span></div>
+          ${breakdown.surge > 0 ? `<div class="fee-line"><span>⚡ Surge/Peak Fee</span><span>${sym}${breakdown.surge}</span></div>` : ''}
           ${bankLine}
-          <div class="fee-total"><span>TOTAL</span><span>₹${breakdown.base + breakdown.handling + breakdown.delivery + (breakdown.surge || 0) - (breakdown.bank_discount || 0)}</span></div>
+          <div class="fee-total"><span>TOTAL</span><span>${sym}${totalVal}</span></div>
         </div>
       </details>
     `;
@@ -641,13 +654,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const items = qcItemsInput ? qcItemsInput.value.trim() : '';
       if (!items) return;
 
+      const region = qcRegionSelector ? qcRegionSelector.value : 'GLOBAL';
       const bankCard = qcBankSelector ? qcBankSelector.value : '';
       const customDiscount = qcCustomDiscount ? qcCustomDiscount.value : '';
 
       qcCompareBtn.disabled = true;
-      qcCompareBtn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border:2px solid rgba(0,0,0,0.2);border-top-color:#020817;border-radius:50%;animation:spin 0.8s linear infinite;"></div> Comparing across 4 platforms...';
+      qcCompareBtn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border:2px solid rgba(0,0,0,0.2);border-top-color:#020817;border-radius:50%;animation:spin 0.8s linear infinite;"></div> Comparing across global platforms...';
       if (qcStatusBadge) {
-        qcStatusBadge.textContent = 'Processing via AI Engine...';
+        qcStatusBadge.textContent = 'Processing Global Cart via AI Engine...';
         qcStatusBadge.style.background = 'var(--palette-olive)';
       }
 
@@ -660,14 +674,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const response = await fetch('/api/quickcart', {
           method: 'POST',
           headers,
-          body: JSON.stringify({ items, bankCard: bankCard || customDiscount ? bankCard : '', priority: qcPriority })
+          body: JSON.stringify({ items, region, bankCard: bankCard || (customDiscount ? bankCard : ''), priority: qcPriority })
         });
         if (!response.ok) throw new Error('API error');
         data = await response.json();
       } catch (err) {
         console.warn('[QuickCart] Server fallback, generating locally:', err);
         const itemLines = items.split(/[,\n;]+/).map(s => s.trim()).filter(s => s.length > 1);
-        data = generateLocalQuickCartData(itemLines, bankCard, customDiscount);
+        data = generateLocalQuickCartData(itemLines, region, bankCard, customDiscount);
       }
 
       // Render results
@@ -676,32 +690,28 @@ document.addEventListener('DOMContentLoaded', () => {
       qcCompareBtn.disabled = false;
       qcCompareBtn.innerHTML = '🔍 Compare Prices Across Platforms';
       if (qcStatusBadge) {
-        qcStatusBadge.textContent = 'Cart Engine Ready';
+        qcStatusBadge.textContent = 'Global Cart Engine Ready';
         qcStatusBadge.style.background = 'rgba(151, 187, 62, 0.2)';
         qcStatusBadge.style.color = '#97BB3E';
       }
     });
   }
 
-  // Local fallback data generator
-  function generateLocalQuickCartData(itemLines, bankCard, customDiscount) {
+  // Local fallback data generator with Global & Indian Support
+  function generateLocalQuickCartData(itemLines, region, bankCard, customDiscount) {
+    const isGlobal = region === 'US' || region === 'UK' || region === 'GLOBAL';
+    const currencySym = region === 'US' ? '$' : (region === 'UK' ? '£' : (region === 'IN' ? '₹' : '$'));
+    const baseMult = region === 'IN' ? 1 : 0.015;
+
     const commonGroceries = {
-      'milk': { name: 'Amul Taaza Milk 1L', base: 68 },
-      'onion': { name: 'Fresh Red Onions 1kg', base: 42 },
-      'maggi': { name: 'Maggi 2-Min Noodles 280g', base: 56 },
-      'oil': { name: 'Fortune Sunflower Oil 1L', base: 155 },
-      'butter': { name: 'Amul Butter 500g', base: 280 },
-      'bread': { name: 'Harvest Gold White Bread', base: 45 },
-      'rice': { name: 'India Gate Basmati Rice 1kg', base: 195 },
-      'sugar': { name: 'Parle-G Sugar 1kg', base: 48 },
-      'atta': { name: 'Aashirvaad Atta 5kg', base: 295 },
-      'egg': { name: 'Farm Fresh Eggs (12 pcs)', base: 84 },
-      'curd': { name: 'Amul Masti Curd 400g', base: 35 },
-      'paneer': { name: 'Amul Fresh Paneer 200g', base: 90 },
-      'potato': { name: 'Fresh Potatoes 1kg', base: 32 },
-      'tomato': { name: 'Fresh Tomatoes 1kg', base: 38 },
-      'dal': { name: 'Toor Dal 1kg', base: 165 },
-      'tea': { name: 'Tata Tea Premium 500g', base: 275 }
+      'milk': { name: isGlobal ? 'Whole Organic Milk 1L' : 'Amul Taaza Milk 1L', base: isGlobal ? 3.49 : 68 },
+      'onion': { name: isGlobal ? 'Fresh Yellow Onions 2lbs' : 'Fresh Red Onions 1kg', base: isGlobal ? 2.29 : 42 },
+      'noodles': { name: isGlobal ? 'Ramen Noodles Pack 300g' : 'Maggi 2-Min Noodles 280g', base: isGlobal ? 2.99 : 56 },
+      'oil': { name: isGlobal ? 'Extra Virgin Olive Oil 500ml' : 'Fortune Sunflower Oil 1L', base: isGlobal ? 8.99 : 155 },
+      'butter': { name: isGlobal ? 'Kerrygold Pure Irish Butter' : 'Amul Butter 500g', base: isGlobal ? 4.99 : 280 },
+      'bread': { name: isGlobal ? 'Whole Wheat Artisan Bread' : 'Harvest Gold White Bread', base: isGlobal ? 3.19 : 45 },
+      'rice': { name: isGlobal ? 'Premium Basmati Rice 2lb' : 'India Gate Basmati Rice 1kg', base: isGlobal ? 5.49 : 195 },
+      'eggs': { name: isGlobal ? 'Grade A Large Eggs 12-ct' : 'Farm Fresh Eggs (12 pcs)', base: isGlobal ? 3.99 : 84 }
     };
 
     const parsedItems = itemLines.map(line => {
@@ -712,54 +722,67 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       const qtyMatch = line.match(/(\d+)/); 
       const qty = qtyMatch ? parseInt(qtyMatch[1]) : 1;
-      const basePrice = matched ? matched.base : Math.floor(Math.random() * 120) + 30;
+      const basePrice = matched ? matched.base : (isGlobal ? (Math.floor(Math.random() * 8) + 2) : (Math.floor(Math.random() * 120) + 30));
       const itemName = matched ? matched.name : line.charAt(0).toUpperCase() + line.slice(1);
 
       return {
-        name: itemName, qty: Math.min(qty, 5), unit: 'pcs',
+        name: itemName, qty: Math.min(qty, 5), unit: isGlobal ? 'pack' : 'pcs',
         prices: {
-          blinkit: basePrice + Math.floor(Math.random() * 12) - 5,
-          zepto: basePrice + Math.floor(Math.random() * 15) - 3,
-          instamart: basePrice + Math.floor(Math.random() * 10) - 2,
-          bigbasket: basePrice + Math.floor(Math.random() * 8) - 4
+          instacart: Number((basePrice * 1.05).toFixed(2)),
+          amazonfresh: Number((basePrice * 0.98).toFixed(2)),
+          dashmart: Number((basePrice * 1.02).toFixed(2)),
+          gopuff: Number((basePrice * 1.08).toFixed(2)),
+          blinkit: Number((basePrice * 1.02).toFixed(2)),
+          zepto: Number((basePrice * 0.99).toFixed(2)),
+          instamart: Number((basePrice * 1.01).toFixed(2)),
+          bigbasket: Number((basePrice * 0.97).toFixed(2))
         },
         stock: {
-          blinkit: Math.random() > 0.12 ? 'in_stock' : 'limited',
-          zepto: Math.random() > 0.08 ? 'in_stock' : 'limited',
-          instamart: Math.random() > 0.18 ? 'in_stock' : (Math.random() > 0.5 ? 'limited' : 'out_of_stock'),
-          bigbasket: Math.random() > 0.1 ? 'in_stock' : 'limited'
+          instacart: 'in_stock', amazonfresh: 'in_stock', dashmart: 'in_stock', gopuff: 'limited',
+          blinkit: 'in_stock', zepto: 'in_stock', instamart: 'in_stock', bigbasket: 'in_stock'
         }
       };
     });
 
-    const platforms = ['blinkit', 'zepto', 'instamart', 'bigbasket'];
-    const etas = { blinkit: 12, zepto: 8, instamart: 16, bigbasket: 35 };
-    const handling = { blinkit: 6, zepto: 5, instamart: 7, bigbasket: 4 };
-    const delivery = { blinkit: 25, zepto: 29, instamart: 22, bigbasket: 30 };
+    const activePlatforms = isGlobal ? ['amazonfresh', 'dashmart', 'instacart', 'gopuff'] : ['zepto', 'blinkit', 'instamart', 'bigbasket'];
+    const etas = isGlobal ? { amazonfresh: 25, dashmart: 15, instacart: 35, gopuff: 18 } : { zepto: 8, blinkit: 12, instamart: 16, bigbasket: 35 };
+    const handling = isGlobal ? { amazonfresh: 1.99, dashmart: 2.49, instacart: 3.99, gopuff: 1.49 } : { zepto: 5, blinkit: 6, instamart: 7, bigbasket: 4 };
+    const delivery = isGlobal ? { amazonfresh: 3.99, dashmart: 2.99, instacart: 4.99, gopuff: 2.99 } : { zepto: 29, blinkit: 25, instamart: 22, bigbasket: 30 };
     const totals = {};
 
-    platforms.forEach(p => {
+    activePlatforms.forEach(p => {
       const base = parsedItems.reduce((sum, item) => sum + (item.prices[p] * item.qty), 0);
-      totals[p] = { base, handling: handling[p], delivery: delivery[p], surge: 0, total: base + handling[p] + delivery[p] };
+      totals[p] = { 
+        base: Number(base.toFixed(2)), 
+        handling: handling[p], 
+        delivery: delivery[p], 
+        surge: 0, 
+        total: Number((base + handling[p] + delivery[p]).toFixed(2)) 
+      };
     });
 
     const sorted = Object.entries(totals).sort((a, b) => a[1].total - b[1].total);
     const cheapestP = sorted[0][0];
+    const fastestP = isGlobal ? 'dashmart' : 'zepto';
 
     let bankDiscountAmt = 0;
     let bankOfferStr = '';
-    const discountRates = { HDFC: 0.10, ICICI: 0.07, SBI: 50, Axis: 0.08, Kotak: 0.05 };
+    const discountRates = { 
+      Chase: 0.10, Amex: 0.10, Citi: 0.05, BofA: 0.08, HSBC: 0.07, Revolut: 0.05,
+      HDFC: 0.10, ICICI: 0.07, SBI: isGlobal ? 5 : 50, Axis: 0.08, Kotak: 0.05 
+    };
+
     if (customDiscount && parseInt(customDiscount) > 0) {
-      bankDiscountAmt = Math.round(totals[cheapestP].total * (parseInt(customDiscount) / 100));
+      bankDiscountAmt = Number((totals[cheapestP].total * (parseInt(customDiscount) / 100)).toFixed(2));
       bankOfferStr = `${customDiscount}% Custom Discount`;
     } else if (bankCard && discountRates[bankCard] !== undefined) {
       const d = discountRates[bankCard];
       if (d < 1) {
-        bankDiscountAmt = Math.round(totals[cheapestP].total * d);
+        bankDiscountAmt = Number((totals[cheapestP].total * d).toFixed(2));
         bankOfferStr = `${Math.round(d * 100)}% off via ${bankCard} Card`;
       } else {
         bankDiscountAmt = d;
-        bankOfferStr = `Flat ₹${d} off via ${bankCard} Card`;
+        bankOfferStr = `Flat ${currencySym}${d} off via ${bankCard} Card`;
       }
     }
 
@@ -767,23 +790,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const splitP2 = sorted[1][0];
     const splitItems1 = parsedItems.slice(0, Math.ceil(parsedItems.length * 0.65)).map(i => `${i.name} x${i.qty}`);
     const splitItems2 = parsedItems.slice(Math.ceil(parsedItems.length * 0.65)).map(i => `${i.name} x${i.qty}`);
-    const splitTotal = Math.round(totals[cheapestP].total * 0.87);
+    const splitTotal = Number((totals[cheapestP].total * 0.88).toFixed(2));
 
     return {
+      currency_symbol: currencySym,
       parsed_items: parsedItems,
       best_options: {
         cheapest: {
           platform: cheapestP.charAt(0).toUpperCase() + cheapestP.slice(1),
-          total: totals[cheapestP].total - bankDiscountAmt,
+          total: Number((totals[cheapestP].total - bankDiscountAmt).toFixed(2)),
           eta_mins: etas[cheapestP],
           breakdown: { ...totals[cheapestP], bank_discount: bankDiscountAmt },
           bank_offer: bankOfferStr
         },
         fastest: {
-          platform: 'Zepto',
-          total: totals.zepto.total,
-          eta_mins: etas.zepto,
-          breakdown: { ...totals.zepto, bank_discount: 0 }
+          platform: fastestP.charAt(0).toUpperCase() + fastestP.slice(1),
+          total: totals[fastestP].total,
+          eta_mins: etas[fastestP],
+          breakdown: { ...totals[fastestP], bank_discount: 0 }
         },
         split_cart: {
           platforms: [splitP1.charAt(0).toUpperCase() + splitP1.slice(1), splitP2.charAt(0).toUpperCase() + splitP2.slice(1)],
@@ -792,7 +816,7 @@ document.addEventListener('DOMContentLoaded', () => {
             [splitP2.charAt(0).toUpperCase() + splitP2.slice(1)]: splitItems2.length > 0 ? splitItems2 : ['Remaining items']
           },
           total: splitTotal,
-          savings: totals[cheapestP].total - splitTotal + bankDiscountAmt,
+          savings: Number((totals[cheapestP].total - splitTotal + bankDiscountAmt).toFixed(2)),
           combined_eta_mins: Math.max(etas[splitP1], etas[splitP2]) + 2
         }
       }
@@ -803,6 +827,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderQuickCartResults(data) {
     if (!qcResultsPanel || !qcBasketItems || !qcCartOptions) return;
     qcResultsPanel.classList.remove('hidden');
+
+    const sym = data.currency_symbol || '₹';
 
     // Render Basket Items
     const items = data.parsed_items || [];
@@ -837,8 +863,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const cheapestPClass = platformClass(cheapest.platform || 'blinkit');
     const fastestPClass = platformClass(fastest.platform || 'zepto');
-    const splitP1Class = split.platforms ? platformClass(split.platforms[0]) : 'blinkit';
-    const splitP2Class = split.platforms ? platformClass(split.platforms[1]) : 'zepto';
 
     // Split cart visual bar percentages
     const splitP1Items = split.items_split ? Object.values(split.items_split)[0] || [] : [];
@@ -851,26 +875,26 @@ document.addEventListener('DOMContentLoaded', () => {
       <!-- 👑 CHEAPEST -->
       <div class="cart-option-card cheapest">
         <div class="cart-option-tag">👑 CHEAPEST TOTAL</div>
-        <div class="cart-option-platform">${cheapest.platform || 'Blinkit'}</div>
+        <div class="cart-option-platform">${cheapest.platform || 'Platform'}</div>
         <div class="cart-option-total-row">
-          <span class="cart-option-total">₹${cheapest.total || 0}</span>
+          <span class="cart-option-total">${sym}${cheapest.total || 0}</span>
           <span class="cart-option-eta">⏱ ${cheapest.eta_mins || 12} mins</span>
         </div>
         ${cheapest.bank_offer ? `<div class="cart-option-bank-offer">🎁 Saved via ${cheapest.bank_offer}</div>` : ''}
-        ${cheapest.breakdown ? renderFeeDrawer(cheapest.breakdown) : ''}
-        <a href="${platformLinks[cheapestPClass]}" target="_blank" class="checkout-btn ${cheapestPClass}">CHECKOUT ON ${(cheapest.platform || 'BLINKIT').toUpperCase()} ➔</a>
+        ${cheapest.breakdown ? renderFeeDrawer(cheapest.breakdown, sym) : ''}
+        <a href="${platformLinks[cheapestPClass] || 'https://www.instacart.com'}" target="_blank" class="checkout-btn ${cheapestPClass}">CHECKOUT ON ${(cheapest.platform || 'ONLINE STORE').toUpperCase()} ➔</a>
       </div>
 
       <!-- ⚡ FASTEST -->
       <div class="cart-option-card fastest">
         <div class="cart-option-tag">⚡ FASTEST DELIVERY</div>
-        <div class="cart-option-platform">${fastest.platform || 'Zepto'}</div>
+        <div class="cart-option-platform">${fastest.platform || 'Platform'}</div>
         <div class="cart-option-total-row">
-          <span class="cart-option-total">₹${fastest.total || 0}</span>
+          <span class="cart-option-total">${sym}${fastest.total || 0}</span>
           <span class="cart-option-eta">⏱ ${fastest.eta_mins || 8} mins</span>
         </div>
-        ${fastest.breakdown ? renderFeeDrawer(fastest.breakdown) : ''}
-        <a href="${platformLinks[fastestPClass]}" target="_blank" class="checkout-btn ${fastestPClass}">CHECKOUT ON ${(fastest.platform || 'ZEPTO').toUpperCase()} ➔</a>
+        ${fastest.breakdown ? renderFeeDrawer(fastest.breakdown, sym) : ''}
+        <a href="${platformLinks[fastestPClass] || 'https://www.doordash.com'}" target="_blank" class="checkout-btn ${fastestPClass}">CHECKOUT ON ${(fastest.platform || 'QUICK STORE').toUpperCase()} ➔</a>
       </div>
 
       <!-- 🔀 SPLIT CART -->
@@ -878,10 +902,10 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="cart-option-tag">🔀 SPLIT CART</div>
         <div class="cart-option-platform">${split.platforms ? split.platforms.join(' + ') : 'Split'}</div>
         <div class="cart-option-total-row">
-          <span class="cart-option-total">₹${split.total || 0}</span>
+          <span class="cart-option-total">${sym}${split.total || 0}</span>
           <span class="cart-option-eta">⏱ ~${split.combined_eta_mins || 14} mins</span>
         </div>
-        ${split.savings > 0 ? `<div class="savings-badge">💰 Save ₹${split.savings} with split</div>` : ''}
+        ${split.savings > 0 ? `<div class="savings-badge">💰 Save ${sym}${split.savings} with split</div>` : ''}
 
         <div class="split-bar-container">
           <div class="split-bar-label">Item Distribution</div>

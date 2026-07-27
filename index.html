@@ -320,14 +320,33 @@
             </div>
             <div class="quickcart-controls">
               <div class="control-group">
-                <label>🏦 Bank Card (for offers)</label>
+                <label>🌍 Region & Currency</label>
+                <select id="qc-region-selector" class="bank-selector">
+                  <option value="GLOBAL" selected>🌐 Global (USD $ / Universal)</option>
+                  <option value="IN">🇮🇳 India (INR ₹ — Blinkit, Zepto, Instamart, BigBasket)</option>
+                  <option value="US">🇺🇸 USA & North America (USD $ — Instacart, Amazon Fresh, DashMart, Gopuff)</option>
+                  <option value="UK">🇬🇧 UK & Europe (GBP £ / EUR € — Getir, Uber Eats, Amazon Fresh, Deliveroo)</option>
+                </select>
+              </div>
+              <div class="control-group">
+                <label>🏦 Bank Card (Global & Local Offers)</label>
                 <select id="qc-bank-selector" class="bank-selector">
                   <option value="">No Bank Card</option>
-                  <option value="HDFC">HDFC — ~10% off</option>
-                  <option value="ICICI">ICICI — ~7% off</option>
-                  <option value="SBI">SBI — Flat ₹50 off</option>
-                  <option value="Axis">Axis — ~8% off</option>
-                  <option value="Kotak">Kotak — ~5% off</option>
+                  <optgroup label="🇺🇸 🌐 Global Credit & Debit Cards">
+                    <option value="Chase">Chase Sapphire / Freedom — ~10% cashback</option>
+                    <option value="Amex">Amex Gold / Platinum — ~10% points value</option>
+                    <option value="Citi">Citi Custom Cash — ~5% cashback</option>
+                    <option value="BofA">Bank of America Preferred — ~8% off</option>
+                    <option value="HSBC">HSBC Premier Card — ~7% off</option>
+                    <option value="Revolut">Revolut Metal / Ultra — ~5% cashback</option>
+                  </optgroup>
+                  <optgroup label="🇮🇳 Indian Bank Cards">
+                    <option value="HDFC">HDFC Bank — ~10% instant discount</option>
+                    <option value="ICICI">ICICI Bank — ~7% instant discount</option>
+                    <option value="SBI">SBI Card — Flat ₹50 / $5 off</option>
+                    <option value="Axis">Axis Bank — ~8% instant discount</option>
+                    <option value="Kotak">Kotak Mahindra — ~5% discount</option>
+                  </optgroup>
                 </select>
               </div>
               <div class="control-group">

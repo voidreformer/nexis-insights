@@ -467,16 +467,16 @@ app.post('/api/analyze', authenticateToken, async (req, res) => {
   return res.json(finalAnalysisData);
 });
 
-// QUICK-COMMERCE CART INTELLIGENCE ROUTE
+// QUICK-COMMERCE CART INTELLIGENCE ROUTE (GLOBAL & INDIAN)
 app.post('/api/quickcart', authenticateToken, async (req, res) => {
-  const { items, bankCard, priority } = req.body;
+  const { items, region, bankCard, priority } = req.body;
   if (!items || !items.trim()) return res.status(400).json({ error: 'Grocery item list is required' });
 
   let finalData;
 
   try {
     const selectedModel = process.env.MODEL_NAME || 'nvidia/nemotron-3-ultra-550b-a55b';
-    console.log(`[QuickCart] Dispatching basket to AI: "${items.substring(0, 80)}..." | Bank: ${bankCard || 'None'} | Priority: ${priority || 'savings'}`);
+    console.log(`[QuickCart] Dispatching basket to AI: "${items.substring(0, 80)}..." | Region: ${region || 'GLOBAL'} | Bank: ${bankCard || 'None'} | Priority: ${priority || 'savings'}`);
 
     const response = await omniRouteClient.chat.completions.create({
       model: selectedModel,

@@ -173,17 +173,16 @@ body::after {
   align-items: center;
   gap: 12px;
 }
-.brand-icon svg {
-  width: 28px;
-  height: 28px;
-  stroke: url(#brand-gradient);
-  color: var(--accent-secondary);
-}
 .brand-text {
   font-family: var(--font-display);
   font-size: 24px;
   font-weight: 700;
   letter-spacing: -0.02em;
+}
+
+/* GLOBAL HIDDEN UTILITY CLASS FOR SPA VIEW SWITCHING */
+.hidden {
+  display: none !important;
 }
 .text-accent {
   color: var(--accent-primary);

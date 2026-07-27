@@ -17,6 +17,8 @@ function saveDb() {
   } catch (err) {
     console.error('[Database] Warning: Could not persist DB file:', err.message);
   }
+}
+
 let dbInitPromise = null;
 
 async function initDb() {
@@ -64,7 +66,7 @@ async function initDb() {
         `);
 
         saveDb();
-        console.log('🗄️ SQLite Database Initialized via sql.js');
+        console.log('🗄️ SQLite Database Initialized via sql.js (nexis_insights.db)');
         return db;
       } catch (err) {
         console.error('[Database] Warning: SQLite WASM initialization issue:', err.message);
@@ -73,10 +75,6 @@ async function initDb() {
     })();
   }
   return dbInitPromise;
-}
-
-  saveDb();
-  console.log('🗄️ SQLite Database Initialized via sql.js (nexis_insights.db)');
 }
 
 function createUser(name, email, passwordHash) {

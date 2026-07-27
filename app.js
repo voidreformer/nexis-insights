@@ -203,46 +203,40 @@ document.addEventListener('DOMContentLoaded', () => {
   const navQuickCart = document.getElementById('nav-quickcart');
   const viewQuickCart = document.getElementById('view-quickcart-container');
 
-  // Navigation Switch
+  // SPA View Navigation Router (SetFlow-style View Switcher)
   function hideAllViews() {
     [viewDashboard, viewHistory, viewSettings, viewQuickCart].forEach(v => { if (v) v.classList.add('hidden'); });
     [navDashboard, navHistory, navSettings, navQuickCart].forEach(n => { if (n) n.classList.remove('active'); });
   }
 
-  navDashboard.addEventListener('click', () => {
+  function switchView(viewElement, navButton, callback) {
     hideAllViews();
-    navDashboard.classList.add('active');
-    viewDashboard.classList.remove('hidden');
-    viewDashboard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (navButton) navButton.classList.add('active');
+    if (viewElement) viewElement.classList.remove('hidden');
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    const mainWorkspace = document.querySelector('.workspace');
+    if (mainWorkspace) mainWorkspace.scrollTop = 0;
+    if (callback) callback();
     closeMobileSidebar();
+  }
+
+  navDashboard.addEventListener('click', () => {
+    switchView(viewDashboard, navDashboard);
   });
 
   navHistory.addEventListener('click', () => {
-    hideAllViews();
-    navHistory.classList.add('active');
-    viewHistory.classList.remove('hidden');
-    viewHistory.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    loadHistory();
-    closeMobileSidebar();
+    switchView(viewHistory, navHistory, loadHistory);
   });
 
   if (navSettings) {
     navSettings.addEventListener('click', () => {
-      hideAllViews();
-      navSettings.classList.add('active');
-      viewSettings.classList.remove('hidden');
-      viewSettings.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      closeMobileSidebar();
+      switchView(viewSettings, navSettings);
     });
   }
 
   if (navQuickCart) {
     navQuickCart.addEventListener('click', () => {
-      hideAllViews();
-      navQuickCart.classList.add('active');
-      viewQuickCart.classList.remove('hidden');
-      viewQuickCart.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      closeMobileSidebar();
+      switchView(viewQuickCart, navQuickCart);
     });
   }
 

@@ -1719,11 +1719,30 @@ body::after {
   border-left: 3px solid var(--palette-cyan);
 }
 
-.citation-footer {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  color: var(--text-muted);
+  .citation-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
 }
+
+/* Mobile RAG Panel & Touch Optimizations (< 768px) */
+@media (max-width: 768px) {
+  #view-rag-container > div:first-of-type {
+    grid-template-columns: 1fr !important;
+  }
+  
+  #rag-citations-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Touch Targets Standard */
+button, input, select, textarea, .nav-item, .rag-quick-tag {
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
 
 

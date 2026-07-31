@@ -33,6 +33,7 @@
       </div>
       <nav class="nav-links">
         <button class="nav-item active" id="nav-dashboard"><span class="icon">📈</span> <span class="nav-label">Dashboard</span></button>
+        <button class="nav-item" id="nav-rag"><span class="icon">🧠</span> <span class="nav-label">Ask RAG AI</span></button>
         <button class="nav-item" id="nav-history"><span class="icon">📑</span> <span class="nav-label">Analysis History</span></button>
         <button class="nav-item" id="nav-quickcart"><span class="icon">🛒</span> <span class="nav-label">Quick Cart</span></button>
         <button class="nav-item" id="nav-settings"><span class="icon">⚙️</span> <span class="nav-label">Settings</span></button>
@@ -278,6 +279,85 @@
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RAG SEMANTIC SEARCH VIEW (Hidden by default) -->
+      <div id="view-rag-container" class="hidden">
+        <header class="workspace-header">
+          <div class="header-title">
+            <h1 class="page-title">🧠 Ask RAG AI Engine</h1>
+            <p class="page-subtitle">Perform semantic vector queries & natural language Q&A across your indexed customer feedback database with grounded citations.</p>
+          </div>
+          <div class="header-actions">
+            <div class="status-indicator">
+              <span class="pulse-dot"></span>
+              <span class="status-badge" id="rag-indexed-badge">RAG Ready (<span id="rag-count-num">0</span> Chunks)</span>
+            </div>
+            <button id="clear-rag-btn" class="btn-glow" style="background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4);">🗑️ Clear RAG DB</button>
+          </div>
+        </header>
+
+        <!-- RAG Search & Indexing Panel -->
+        <div style="display: grid; grid-template-columns: 1fr 340px; gap: 24px; margin-bottom: 24px;">
+          <!-- Left Main Search Box -->
+          <div class="glass-panel">
+            <div class="panel-header">
+              <h3>🔍 Ask Anything About Your Customer Data</h3>
+              <span class="badge" style="background: var(--palette-cyan); color: #020817;">Vector Search</span>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+              <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                <input type="text" id="rag-query-input" placeholder="e.g. What are customers complaining about regarding battery or heating?" style="flex: 1; padding: 14px 18px; border-radius: 12px; background: rgba(0, 37, 102, 0.4); color: #fff; border: 1px solid var(--border-light); font-size: 15px;" />
+                <button id="rag-search-btn" class="btn-primary" style="padding: 14px 24px; white-space: nowrap;">🔍 Ask RAG AI</button>
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <span style="font-size: 12px; color: var(--text-muted); align-self: center;">Quick Queries:</span>
+                <button class="badge rag-quick-tag" data-query="What are the top negative complaints?">⚠️ Top Complaints</button>
+                <button class="badge rag-quick-tag" data-query="What new features do users want?">💡 Requested Features</button>
+                <button class="badge rag-quick-tag" data-query="What pricing or subscription issues were reported?">💰 Pricing & Billing</button>
+                <button class="badge rag-quick-tag" data-query="What features do users love most?">❤️ Loved Features</button>
+              </div>
+            </div>
+
+            <!-- Grounded RAG Answer Box -->
+            <div id="rag-answer-container" class="hidden" style="margin-top: 24px; padding: 20px; border-radius: 12px; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--palette-cyan);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
+                <span style="font-size: 14px; font-weight: 700; color: var(--palette-cyan);">🧠 Grounded RAG Response (NVIDIA Nemotron 3 Ultra)</span>
+                <span class="badge" id="rag-matches-count" style="background: rgba(6, 182, 212, 0.2); color: var(--palette-cyan);">5 Matching Sources</span>
+              </div>
+              <div id="rag-answer-text" style="line-height: 1.7; font-size: 14px; color: var(--text-main); white-space: pre-wrap;"></div>
+            </div>
+          </div>
+
+          <!-- Right Manual Data Indexer -->
+          <div class="glass-panel">
+            <div class="panel-header">
+              <h3>📥 Index Raw Feedback Batch</h3>
+              <span class="badge">WASM Vector Store</span>
+            </div>
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px;">Source Label Tag</label>
+              <input type="text" id="rag-source-tag" value="App Store Reviews" style="width: 100%; padding: 8px 12px; border-radius: 8px; background: rgba(0, 37, 102, 0.4); color: #fff; border: 1px solid var(--border-light); font-size: 13px;" />
+            </div>
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 4px;">Raw Feedback Paragraphs / Reviews</label>
+              <textarea id="rag-batch-input" rows="8" placeholder="Paste custom reviews here (1 per line)..." style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(0, 37, 102, 0.4); color: #fff; border: 1px solid var(--border-light); font-size: 12px; resize: vertical;"></textarea>
+            </div>
+            <button id="rag-index-now-btn" class="btn-glow" style="width: 100%;">⚡ Vectorize & Index Now</button>
+          </div>
+        </div>
+
+        <!-- Citations / Retrieved Chunks Grid -->
+        <div class="glass-panel" id="rag-citations-panel">
+          <div class="panel-header">
+            <h3>📌 Retrieved Source Citations & Match Confidence</h3>
+            <span class="badge" id="rag-citations-badge">Top-K Cosine Matches</span>
+          </div>
+          <div id="rag-citations-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
+            <div style="color: var(--text-muted); font-size: 13px; padding: 24px; text-align: center; grid-column: span 3;">Submit a RAG query above to inspect exact matching feedback citations.</div>
           </div>
         </div>
       </div>

@@ -65,6 +65,19 @@ async function initDb() {
           )
         `);
 
+        // Create Feedback Vectors RAG Table
+        db.run(`
+          CREATE TABLE IF NOT EXISTS feedback_vectors (
+            id TEXT PRIMARY KEY,
+            user_id TEXT,
+            feedback_text TEXT NOT NULL,
+            source_tag TEXT DEFAULT 'General',
+            sentiment TEXT DEFAULT 'Neutral',
+            embedding_vector TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          )
+        `);
+
         saveDb();
         console.log('🗄️ SQLite Database Initialized via sql.js (nexis_insights.db)');
         return db;
@@ -202,6 +215,67 @@ function deleteAnalysis(id, userId) {
   return true;
 }
 
+// RAG Vector Operations
+function saveVectorEntries(userId, items) {
+  if (!db || !Array.isArray(items)) return [];
+  const savedIds = [];
+  try {
+    items.forEach(item => {
+      const id = uuidv4();
+      const vectorJson = JSON.stringify(item.vector || []);
+      db.run(
+        `INSERT INTO feedback_vectors (id, user_id, feedback_text, source_tag, sentiment, embedding_vector) VALUES (?, ?, ?, ?, ?, ?)`,
+        [id, userId || 'anonymous', item.text, item.source || 'Batch Input', item.sentiment || 'Neutral', vectorJson]
+      );
+      savedIds.push(id);
+    });
+    saveDb();
+  } catch (err) {
+    console.error('[Database] saveVectorEntries error:', err.message);
+  }
+  return savedIds;
+}
+
+function getUserVectors(userId) {
+  if (!db) return [];
+  try {
+    let query = 'SELECT * FROM feedback_vectors ORDER BY created_at DESC LIMIT 500';
+    let params = [];
+    if (userId) {
+      query = 'SELECT * FROM feedback_vectors WHERE user_id = ? ORDER BY created_at DESC LIMIT 500';
+      params = [userId];
+    }
+    const res = db.exec(query, params);
+    if (!res.length) return [];
+    const columns = res[0].columns;
+    return res[0].values.map(row => {
+      const item = {};
+      columns.forEach((col, idx) => item[col] = row[idx]);
+      try { item.vector = JSON.parse(item.embedding_vector); } catch(e) { item.vector = []; }
+      return item;
+    });
+  } catch (err) {
+    console.error('[Database] getUserVectors error:', err.message);
+    return [];
+  }
+}
+
+function clearUserVectors(userId) {
+  if (db) {
+    try {
+      if (userId) {
+        db.run('DELETE FROM feedback_vectors WHERE user_id = ?', [userId]);
+      } else {
+        db.run('DELETE FROM feedback_vectors');
+      }
+      saveDb();
+    } catch (err) {
+      console.error('[Database] clearUserVectors error:', err.message);
+    }
+  }
+  return true;
+}
+
 module.exports = {
   initDb,
   createUser,
@@ -209,5 +283,9 @@ module.exports = {
   findUserById,
   saveAnalysis,
   getUserHistory,
-  deleteAnalysis
+  deleteAnalysis,
+  saveVectorEntries,
+  getUserVectors,
+  clearUserVectors
 };
+

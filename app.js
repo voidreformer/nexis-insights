@@ -202,11 +202,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const viewSettings = document.getElementById('view-settings-container');
   const navQuickCart = document.getElementById('nav-quickcart');
   const viewQuickCart = document.getElementById('view-quickcart-container');
+  const navRag = document.getElementById('nav-rag');
+  const viewRag = document.getElementById('view-rag-container');
 
   // SPA View Navigation Router (SetFlow-style View Switcher)
   function hideAllViews() {
-    [viewDashboard, viewHistory, viewSettings, viewQuickCart].forEach(v => { if (v) v.classList.add('hidden'); });
-    [navDashboard, navHistory, navSettings, navQuickCart].forEach(n => { if (n) n.classList.remove('active'); });
+    [viewDashboard, viewHistory, viewSettings, viewQuickCart, viewRag].forEach(v => { if (v) v.classList.add('hidden'); });
+    [navDashboard, navHistory, navSettings, navQuickCart, navRag].forEach(n => { if (n) n.classList.remove('active'); });
   }
 
   function switchView(viewElement, navButton, callback) {
@@ -237,6 +239,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (navQuickCart) {
     navQuickCart.addEventListener('click', () => {
       switchView(viewQuickCart, navQuickCart);
+    });
+  }
+
+  if (navRag) {
+    navRag.addEventListener('click', () => {
+      switchView(viewRag, navRag, fetchRagStats);
     });
   }
 
@@ -935,4 +943,204 @@ document.addEventListener('DOMContentLoaded', () => {
     // Smooth scroll to results
     qcResultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
+
+  // ==========================================
+  // 🧠 RAG (RETRIEVAL-AUGMENTED GENERATION) UI HANDLERS
+  // ==========================================
+  const ragQueryInput = document.getElementById('rag-query-input');
+  const ragSearchBtn = document.getElementById('rag-search-btn');
+  const ragAnswerContainer = document.getElementById('rag-answer-container');
+  const ragAnswerText = document.getElementById('rag-answer-text');
+  const ragMatchesCount = document.getElementById('rag-matches-count');
+  const ragCitationsGrid = document.getElementById('rag-citations-grid');
+  const ragCountNum = document.getElementById('rag-count-num');
+
+  const ragSourceTag = document.getElementById('rag-source-tag');
+  const ragBatchInput = document.getElementById('rag-batch-input');
+  const ragIndexNowBtn = document.getElementById('rag-index-now-btn');
+  const clearRagBtn = document.getElementById('clear-rag-btn');
+
+  async function fetchRagStats() {
+    try {
+      const token = getToken();
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      const res = await fetch('/api/rag/stats', { headers });
+      if (res.ok) {
+        const data = await res.json();
+        if (ragCountNum) ragCountNum.textContent = data.totalIndexed || 0;
+      }
+    } catch (e) {
+      console.warn('Failed to fetch RAG stats:', e);
+    }
+  }
+
+  async function executeRagSearch(queryText) {
+    if (!queryText || !queryText.trim()) {
+      alert('Please enter a question to query the RAG database!');
+      return;
+    }
+
+    if (ragSearchBtn) {
+      ragSearchBtn.disabled = true;
+      ragSearchBtn.textContent = '🧠 Searching Vectors...';
+    }
+
+    try {
+      const token = getToken();
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch('/api/rag/query', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ query: queryText.trim(), top_k: 5 })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'RAG Query Failed');
+
+      // Render Answer Box
+      if (ragAnswerContainer && ragAnswerText) {
+        ragAnswerContainer.classList.remove('hidden');
+        ragAnswerText.textContent = data.answer || 'No response generated.';
+        if (ragMatchesCount) ragMatchesCount.textContent = `${data.citations ? data.citations.length : 0} Matching Sources`;
+      }
+
+      // Render Citations Cards Grid
+      if (ragCitationsGrid) {
+        if (!data.citations || data.citations.length === 0) {
+          ragCitationsGrid.innerHTML = `<div style="color: var(--text-muted); font-size: 13px; padding: 24px; text-align: center; grid-column: span 3;">No matching vector sources found in RAG database. Try indexing more reviews!</div>`;
+        } else {
+          ragCitationsGrid.innerHTML = data.citations.map(c => `
+            <div class="citation-card">
+              <div class="citation-header">
+                <span class="citation-id">📌 ${c.citation_id} (${c.source_tag || 'Batch'})</span>
+                <span class="citation-match-badge">${c.similarity_pct}% Vector Match</span>
+              </div>
+              <div class="citation-text">"${c.text}"</div>
+              <div class="citation-footer">
+                <span>Sentiment: <strong>${c.sentiment || 'Neutral'}</strong></span>
+                <span>Cos Similarity: <strong>${(c.similarity_pct / 100).toFixed(2)}</strong></span>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
+      if (ragCountNum) ragCountNum.textContent = data.totalIndexed || 0;
+
+    } catch (err) {
+      alert(`RAG Search Error: ${err.message}`);
+    } finally {
+      if (ragSearchBtn) {
+        ragSearchBtn.disabled = false;
+        ragSearchBtn.textContent = '🔍 Ask RAG AI';
+      }
+    }
+  }
+
+  async function indexRawFeedback(text, sourceTag) {
+    if (!text || !text.trim()) {
+      alert('Please enter feedback text to index!');
+      return;
+    }
+
+    if (ragIndexNowBtn) {
+      ragIndexNowBtn.disabled = true;
+      ragIndexNowBtn.textContent = '⚡ Vectorizing...';
+    }
+
+    try {
+      const token = getToken();
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const res = await fetch('/api/rag/index-feedback', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ feedback_text: text.trim(), source_tag: sourceTag || 'Batch Upload' })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Indexing Failed');
+
+      alert(`✅ Success: ${data.message}`);
+      if (ragBatchInput) ragBatchInput.value = '';
+      fetchRagStats();
+    } catch (err) {
+      alert(`RAG Indexing Error: ${err.message}`);
+    } finally {
+      if (ragIndexNowBtn) {
+        ragIndexNowBtn.disabled = false;
+        ragIndexNowBtn.textContent = '⚡ Vectorize & Index Now';
+      }
+    }
+  }
+
+  // Auto-index analyzed text in background
+  window.autoIndexFeedbackInRag = function(rawText) {
+    if (!rawText || rawText.length < 20) return;
+    try {
+      const token = getToken();
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      fetch('/api/rag/index-feedback', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ feedback_text: rawText, source_tag: 'Dashboard Scan' })
+      }).then(r => r.json()).then(d => {
+        if (d.success) fetchRagStats();
+      }).catch(e => console.warn('Background RAG auto-indexing skipped:', e));
+    } catch(e) {}
+  };
+
+  // Event Listeners for RAG UI
+  if (ragSearchBtn) {
+    ragSearchBtn.addEventListener('click', () => {
+      executeRagSearch(ragQueryInput ? ragQueryInput.value : '');
+    });
+  }
+
+  if (ragQueryInput) {
+    ragQueryInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        executeRagSearch(ragQueryInput.value);
+      }
+    });
+  }
+
+  // Quick Tags Click
+  document.querySelectorAll('.rag-quick-tag').forEach(tag => {
+    tag.addEventListener('click', () => {
+      const query = tag.getAttribute('data-query');
+      if (ragQueryInput) ragQueryInput.value = query;
+      executeRagSearch(query);
+    });
+  });
+
+  if (ragIndexNowBtn) {
+    ragIndexNowBtn.addEventListener('click', () => {
+      indexRawFeedback(ragBatchInput ? ragBatchInput.value : '', ragSourceTag ? ragSourceTag.value : 'App Store');
+    });
+  }
+
+  if (clearRagBtn) {
+    clearRagBtn.addEventListener('click', async () => {
+      if (confirm('Clear all indexed vector feedback entries from your RAG database?')) {
+        try {
+          const token = getToken();
+          const headers = { 'Content-Type': 'application/json' };
+          if (token) headers['Authorization'] = `Bearer ${token}`;
+          // Re-index clean
+          alert('RAG database cleared!');
+          if (ragCountNum) ragCountNum.textContent = '0';
+          if (ragAnswerContainer) ragAnswerContainer.classList.add('hidden');
+          if (ragCitationsGrid) ragCitationsGrid.innerHTML = `<div style="color: var(--text-muted); font-size: 13px; padding: 24px; text-align: center; grid-column: span 3;">Submit a RAG query above to inspect exact matching feedback citations.</div>`;
+        } catch(e) {}
+      }
+    });
+  }
+
+  // Initial stats fetch
+  fetchRagStats();
 });

@@ -87,7 +87,7 @@ Return a RAW JSON object matching this schema:
     "competitor_prices": [{"store": "<category-matched real store>", "price": "<realistic competitor price>"}]
   }
 }
-DO NOT wrap in markdown formatting (```json). Return raw JSON only.
+DO NOT wrap in markdown code blocks. Return raw JSON only.
 `;
 
 const QUICKCART_SYSTEM_PROMPT = `
@@ -596,12 +596,214 @@ app.post('/api/quickcart', authenticateToken, async (req, res) => {
   return res.json(finalData);
 });
 
+// ==========================================
+// RAG (Retrieval-Augmented Generation) Engine
+// ==========================================
+
+// Vector Embedding Engine: 128-dim Normalized Hash / TF-IDF Vectorizer
+function generateTextVector(text) {
+  const dim = 128;
+  const vec = new Array(dim).fill(0);
+  if (!text || typeof text !== 'string') return vec;
+
+  const words = text.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(w => w.length > 1);
+  if (words.length === 0) return vec;
+
+  words.forEach(word => {
+    let hash = 0;
+    for (let i = 0; i < word.length; i++) {
+      hash = (hash << 5) - hash + word.charCodeAt(i);
+      hash |= 0;
+    }
+    const idx = Math.abs(hash) % dim;
+    vec[idx] += 1;
+  });
+
+  // L2 Normalize
+  let norm = 0;
+  for (let i = 0; i < dim; i++) norm += vec[i] * vec[i];
+  norm = Math.sqrt(norm);
+  if (norm > 0) {
+    for (let i = 0; i < dim; i++) vec[i] = vec[i] / norm;
+  }
+  return vec;
+}
+
+// Cosine Similarity Calculator
+function cosineSimilarity(vecA, vecB) {
+  if (!vecA || !vecB || vecA.length !== vecB.length) return 0;
+  let dot = 0, normA = 0, normB = 0;
+  for (let i = 0; i < vecA.length; i++) {
+    dot += vecA[i] * vecB[i];
+    normA += vecA[i] * vecA[i];
+    normB += vecB[i] * vecB[i];
+  }
+  if (normA === 0 || normB === 0) return 0;
+  return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+}
+
+// RAG Indexing Endpoint: Vectorizes and persists feedback entries
+app.post('/api/rag/index-feedback', authenticateToken, async (req, res) => {
+  try {
+    const { feedback_text, source_tag = 'Batch Upload' } = req.body;
+    if (!feedback_text || typeof feedback_text !== 'string') {
+      return res.status(400).json({ error: 'feedback_text is required' });
+    }
+
+    const userId = req.user ? req.user.id : 'anonymous';
+
+    // Split text into individual customer reviews/paragraphs
+    const rawChunks = feedback_text.split(/(?:\r?\n){2,}|\n(?=[-\*•]|\d+\.)/).map(c => c.trim()).filter(c => c.length > 10);
+    const chunks = rawChunks.length > 0 ? rawChunks : [feedback_text.trim()];
+
+    const itemsToSave = chunks.map((chunkText, idx) => {
+      const vector = generateTextVector(chunkText);
+      const isNeg = /bad|slow|crash|bug|fail|broken|poor|expensive|issue|delay|worst|terrible|hate/i.test(chunkText);
+      const isPos = /great|love|fast|awesome|good|excellent|perfect|best|like|super/i.test(chunkText);
+      const sentiment = isNeg ? 'Negative' : (isPos ? 'Positive' : 'Neutral');
+
+      return {
+        text: chunkText,
+        source: `${source_tag} #${idx + 1}`,
+        sentiment,
+        vector
+      };
+    });
+
+    const savedIds = db.saveVectorEntries(userId, itemsToSave);
+
+    res.json({
+      success: true,
+      indexedCount: savedIds.length,
+      message: `Successfully indexed ${savedIds.length} feedback vector chunks into RAG database.`
+    });
+  } catch (err) {
+    console.error('[RAG Engine] Indexing Error:', err);
+    res.status(500).json({ error: 'Failed to index feedback into RAG engine' });
+  }
+});
+
+// RAG Q&A Query Endpoint: Semantic Search + NVIDIA LLM Grounded Answer
+app.post('/api/rag/query', authenticateToken, async (req, res) => {
+  try {
+    const { query, top_k = 5 } = req.body;
+    if (!query || typeof query !== 'string') {
+      return res.status(400).json({ error: 'Search query is required' });
+    }
+
+    const userId = req.user ? req.user.id : 'anonymous';
+    const allVectors = db.getUserVectors(userId);
+
+    if (allVectors.length === 0) {
+      return res.json({
+        success: true,
+        answer: "No customer feedback data has been indexed into the RAG database yet. Please submit or index feedback items first!",
+        citations: [],
+        totalIndexed: 0
+      });
+    }
+
+    const queryVec = generateTextVector(query);
+
+    // Compute Cosine Similarities
+    const scored = allVectors.map(item => {
+      const sim = cosineSimilarity(queryVec, item.vector || []);
+      return { ...item, similarityScore: sim };
+    });
+
+    // Sort by highest similarity
+    scored.sort((a, b) => b.similarityScore - a.similarityScore);
+
+    // Filter Top K matches
+    const topMatches = scored.slice(0, Math.min(top_k, scored.length));
+
+    // Construct Context for NVIDIA Nemotron LLM Grounded Q&A
+    const contextText = topMatches.map((match, idx) => `[Source #${idx + 1} | Tag: ${match.source_tag} | Sentiment: ${match.sentiment}]: "${match.feedback_text}"`).join('\n\n');
+
+    let ragAnswer = '';
+
+    const apiKey = process.env.NVIDIA_API_KEY || process.env.OMNIROUTE_API_KEY || process.env.GEMINI_API_KEY;
+
+    if (apiKey && apiKey !== 'dummy_nim_key') {
+      try {
+        const ragPrompt = `You are Nexis Insights RAG AI. Answer the user question based STRICTLY on the retrieved customer feedback context below. Include citations like [Source #1], [Source #2] wherever applicable. If the context does not contain relevant info, summarize what was found honestly.
+        
+RETRIEVED CUSTOMER FEEDBACK CONTEXT:
+${contextText}
+
+USER QUESTION:
+"${query}"`;
+
+        const completion = await omniRouteClient.chat.completions.create({
+          model: 'nvidia/nemotron-4-340b-instruct',
+          messages: [
+            { role: 'system', content: 'You are an executive product manager answering user queries using RAG citations.' },
+            { role: 'user', content: ragPrompt }
+          ],
+          temperature: 0.2,
+          max_tokens: 1000
+        });
+
+        if (completion.choices && completion.choices[0]?.message?.content) {
+          ragAnswer = completion.choices[0].message.content.trim();
+        }
+      } catch (llmErr) {
+        console.warn('[RAG LLM Error] Utilizing fallback RAG synthesizer:', llmErr.message);
+      }
+    }
+
+    // Fallback Synthesizer if LLM key is absent or fails
+    if (!ragAnswer) {
+      ragAnswer = `Based on the RAG semantic analysis of your indexed customer feedback for query "${query}":\n\n` +
+        `Top relevant findings (${topMatches.length} matching sources):\n` +
+        topMatches.map((m, i) => `• [Source #${i + 1}]: "${m.feedback_text.slice(0, 140)}..." (Match Confidence: ${Math.round(m.similarityScore * 100)}%)`).join('\n\n');
+    }
+
+    const citations = topMatches.map((m, i) => ({
+      citation_id: `Source #${i + 1}`,
+      source_tag: m.source_tag,
+      sentiment: m.sentiment,
+      text: m.feedback_text,
+      similarity_pct: Math.round(m.similarityScore * 100)
+    }));
+
+    res.json({
+      success: true,
+      query,
+      answer: ragAnswer,
+      citations,
+      totalIndexed: allVectors.length
+    });
+
+  } catch (err) {
+    console.error('[RAG Engine] Query Error:', err);
+    res.status(500).json({ error: 'Failed to process RAG query' });
+  }
+});
+
+// RAG Stats Endpoint
+app.get('/api/rag/stats', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user ? req.user.id : 'anonymous';
+    const allVectors = db.getUserVectors(userId);
+    res.json({
+      success: true,
+      totalIndexed: allVectors.length,
+      lastIndexedAt: allVectors.length > 0 ? allVectors[0].created_at : null
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch RAG stats' });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`🚀 Nexis Insights API running on port ${PORT}`);
     console.log(`🌍 Universal Multi-Category Price & Product Intelligence Engine Active`);
+    console.log(`🧠 RAG Vector Semantic Search & Q&A Engine Active`);
   });
 }
 
 module.exports = app;
+
